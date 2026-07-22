@@ -23,7 +23,9 @@ function Apply-ServiceAndTaskTweaks {
     if ($Config.services) {
         foreach ($Svc in $Config.services) {
             $SvcName = $Svc.name
-            $DisplayName = if ($Svc.displayName) { $Svc.displayName } else { $SvcName }
+            
+            $DisplayName = $SvcName
+            if ($Svc.displayName) { $DisplayName = $Svc.displayName }
 
             $ServiceObj = Get-Service -Name $SvcName -ErrorAction SilentlyContinue
             if ($ServiceObj) {

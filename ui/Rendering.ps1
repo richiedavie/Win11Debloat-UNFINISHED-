@@ -48,7 +48,13 @@ function Log-DebloatAction {
         [string]$Details
     )
     
-    $LogDir = if ($global:RootDir) { Join-Path $global:RootDir "logs" } else { Join-Path $PSScriptRoot "..\logs" }
+    $LogDir = ""
+    if ($global:RootDir) {
+        $LogDir = Join-Path $global:RootDir "logs"
+    } else {
+        $LogDir = Join-Path $PSScriptRoot "..\logs"
+    }
+
     if (-not (Test-Path $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }

@@ -25,7 +25,10 @@ function Apply-RegistryTweaks {
         $Path = $Tweak.path
         $Name = $Tweak.name
         $Value = $Tweak.value
-        $Type = if ($Tweak.type) { $Tweak.type } else { "DWord" }
+        
+        $Type = "DWord"
+        if ($Tweak.type) { $Type = $Tweak.type }
+        
         $Description = $Tweak.description
 
         # Backup key before modification
@@ -50,8 +53,12 @@ function Apply-RegistryTweaks {
         catch {
             # Fallback to reg.exe add if PowerShell provider encounters permission/type issues
             try {
-                $RegHive = if ($Hive -eq "HKLM") { "HKLM" } else { "HKCU" }
-                $RegType = if ($Type -eq "DWord") { "REG_DWORD" } else { "REG_SZ" }
+                $RegHive = "HKCU"
+                if ($Hive -eq "HKLM") { $RegHive = "HKLM" }
+                
+                $RegType = "REG_SZ"
+                if ($Type -eq "DWord") { $RegType = "REG_DWORD" }
+                
                 $null = reg add "$RegHive\$Path" /v "$Name" /t $RegType /d "$Value" /f 2>&1
                 Write-RenderStatus "Applied via REG.EXE: [$Hive\$Path] $Name = $Value ($Description)" "Success"
                 Log-DebloatAction "Registry-Tweak" "Applied via REG.EXE [$Hive\$Path] $Name = $Value"
