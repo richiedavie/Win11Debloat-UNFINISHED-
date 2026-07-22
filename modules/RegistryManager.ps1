@@ -34,7 +34,7 @@ function Apply-RegistryTweaks {
         # Backup key before modification
         Backup-RegistryKey -Hive $Hive -Path $Path -BackupDir $BackupDir
 
-        $PsDrivePath = "$Hive:\$Path"
+        $PsDrivePath = "${Hive}:\$Path"
 
         try {
             if (-not (Test-Path -Path $PsDrivePath)) {
@@ -47,8 +47,8 @@ function Apply-RegistryTweaks {
                 New-ItemProperty -Path $PsDrivePath -Name $Name -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
             }
 
-            Write-RenderStatus "Applied: [$Hive\$Path] $Name = $Value ($Description)" "Success"
-            Log-DebloatAction "Registry-Tweak" "Applied [$Hive\$Path] $Name = $Value"
+            Write-RenderStatus "Applied: [${Hive}\$Path] $Name = $Value ($Description)" "Success"
+            Log-DebloatAction "Registry-Tweak" "Applied [${Hive}\$Path] $Name = $Value"
         }
         catch {
             # Fallback to reg.exe add if PowerShell provider encounters permission/type issues
@@ -60,12 +60,12 @@ function Apply-RegistryTweaks {
                 if ($Type -eq "DWord") { $RegType = "REG_DWORD" }
                 
                 $null = reg add "$RegHive\$Path" /v "$Name" /t $RegType /d "$Value" /f 2>&1
-                Write-RenderStatus "Applied via REG.EXE: [$Hive\$Path] $Name = $Value ($Description)" "Success"
-                Log-DebloatAction "Registry-Tweak" "Applied via REG.EXE [$Hive\$Path] $Name = $Value"
+                Write-RenderStatus "Applied via REG.EXE: [${Hive}\$Path] $Name = $Value ($Description)" "Success"
+                Log-DebloatAction "Registry-Tweak" "Applied via REG.EXE [${Hive}\$Path] $Name = $Value"
             }
             catch {
-                Write-RenderStatus "Failed to apply registry tweak [$Hive\$Path] $Name: $_" "Warning"
-                Log-DebloatAction "Registry-Tweak" "FAILED [$Hive\$Path] $Name - $_"
+                Write-RenderStatus "Failed to apply registry tweak [${Hive}\$Path] $Name: $_" "Warning"
+                Log-DebloatAction "Registry-Tweak" "FAILED [${Hive}\$Path] $Name - $_"
             }
         }
     }

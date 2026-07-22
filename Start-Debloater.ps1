@@ -1,5 +1,17 @@
 # Start-Debloater.ps1 - Main entry script
 
+
+
+# 1. Environment & OS Detection (Auto-enable DryRun on Linux/macOS)
+if ($IsLinux -or $IsMacOS) {
+    Write-Host "`n[!] Non-Windows environment detected ($($PSVersionTable.OS))." -ForegroundColor Yellow
+    Write-Host "    Forcing SIMULATION (Dry-Run) Mode...`n" -ForegroundColor Yellow
+    $DryRun = $true
+}
+
+
+
+
 # Ensure Administrator privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Error: Administrator privileges are required to run Windows 11 Debloater." -ForegroundColor Red
