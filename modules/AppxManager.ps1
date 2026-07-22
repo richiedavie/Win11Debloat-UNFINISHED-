@@ -10,20 +10,33 @@ function Remove-DebloatAppxPackages {
         return
     }
 
-    $Config = Get-Content -Path $ConfigPath | ConvertFrom-Json
+    try {
+        $Config = Get-Content -Path $ConfigPath -Raw | ConvertFrom-Json
+    } catch {
+        Write-RenderStatus "Failed to parse JSON configuration file: $ConfigPath" "Error"
+        return
+    }
+
     $Targets = @()
     if ($Config.ai_copilot_apps) { $Targets += $Config.ai_copilot_apps }
     if ($Config.stock_bloatware_apps) { $Targets += $Config.stock_bloatware_apps }
 
     Write-RenderStatus "Beginning AppX Package Purging Process..." "Header"
 
+    # Pre-fetch installed and provisioned packages for speed & performance
+    $AllUserPackages = Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+    $AllProvisionedPackages = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+
     foreach ($AppName in $Targets) {
         $FoundAny = $false
 
-        # 1. Installed AppX Packages Removal (Current & All Users)
-        $UserPackages = Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$AppName*" -or $_.PackageFullName -like "*$AppName*" }
-        if ($UserPackages) {
-            foreach ($Pkg in $UserPackages) {
+        # 1. Match Installed AppX Packages
+        $MatchingUserPkgs = $AllUserPackages | Where-Object { 
+            $_.Name -like "*$AppName*" -or $_.PackageFullName -like "*$AppName*"
+        }
+
+        if ($MatchingUserPkgs) {
+            foreach ($Pkg in $MatchingUserPkgs) {
                 $FoundAny = $true
                 try {
                     Write-RenderStatus "Removing installed package: $($Pkg.PackageFullName)" "Info"
@@ -31,16 +44,25 @@ function Remove-DebloatAppxPackages {
                     Log-DebloatAction "AppX-User-Remove" "Removed $($Pkg.PackageFullName)"
                 }
                 catch {
-                    Write-RenderStatus "Failed to remove user package $($Pkg.PackageFullName): $_" "Warning"
-                    Log-DebloatAction "AppX-User-Remove" "FAILED: $($Pkg.PackageFullName) - $_"
+                    try {
+                        # Fallback for current user only if -AllUsers fails
+                        Remove-AppxPackage -Package $Pkg.PackageFullName -ErrorAction Stop
+                        Log-DebloatAction "AppX-User-Remove" "Removed (CurrentUser) $($Pkg.PackageFullName)"
+                    } catch {
+                        Write-RenderStatus "Failed to remove user package $($Pkg.PackageFullName): $_" "Warning"
+                        Log-DebloatAction "AppX-User-Remove" "FAILED: $($Pkg.PackageFullName) - $_"
+                    }
                 }
             }
         }
 
-        # 2. Provisioned Package Removal (DISM / Blueprint)
-        $ProvisionedPackages = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "*$AppName*" -or $_.PackageName -like "*$AppName*" }
-        if ($ProvisionedPackages) {
-            foreach ($ProvPkg in $ProvisionedPackages) {
+        # 2. Match Provisioned AppX Blueprint Packages
+        $MatchingProvPkgs = $AllProvisionedPackages | Where-Object { 
+            $_.DisplayName -like "*$AppName*" -or $_.PackageName -like "*$AppName*"
+        }
+
+        if ($MatchingProvPkgs) {
+            foreach ($ProvPkg in $MatchingProvPkgs) {
                 $FoundAny = $true
                 try {
                     Write-RenderStatus "Purging provisioned package blueprint: $($ProvPkg.PackageName)" "Info"
@@ -48,14 +70,21 @@ function Remove-DebloatAppxPackages {
                     Log-DebloatAction "AppX-Provisioned-Purge" "Purged $($ProvPkg.PackageName)"
                 }
                 catch {
-                    Write-RenderStatus "Failed to purge provisioned package $($ProvPkg.PackageName): $_" "Warning"
-                    Log-DebloatAction "AppX-Provisioned-Purge" "FAILED: $($ProvPkg.PackageName) - $_"
+                    try {
+                        # Fallback to DISM command line tool
+                        dism.exe /Online /Remove-ProvisionedAppxPackage /PackageName:"$($ProvPkg.PackageName)" *>$null
+                        Write-RenderStatus "Purged provisioned package via DISM.EXE: $($ProvPkg.PackageName)" "Success"
+                        Log-DebloatAction "AppX-Provisioned-Purge" "Purged via DISM.EXE $($ProvPkg.PackageName)"
+                    } catch {
+                        Write-RenderStatus "Failed to purge provisioned package $($ProvPkg.PackageName): $_" "Warning"
+                        Log-DebloatAction "AppX-Provisioned-Purge" "FAILED: $($ProvPkg.PackageName) - $_"
+                    }
                 }
             }
         }
 
         if (-not $FoundAny) {
-            Write-RenderStatus "No installed or provisioned package found for target: $AppName" "Muted"
+            Write-RenderStatus "No installed or provisioned package found matching target pattern: *$AppName*" "Muted"
         }
     }
 

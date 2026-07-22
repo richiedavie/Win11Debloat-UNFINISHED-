@@ -10,14 +10,20 @@ function Apply-ServiceAndTaskTweaks {
         return
     }
 
-    $Config = Get-Content -Path $ConfigPath | ConvertFrom-Json
+    try {
+        $Config = Get-Content -Path $ConfigPath -Raw | ConvertFrom-Json
+    } catch {
+        Write-RenderStatus "Failed to parse JSON configuration file: $ConfigPath" "Error"
+        return
+    }
+
     Write-RenderStatus "Managing Background Services & Scheduled Tasks..." "Header"
 
     # 1. Disable Services
     if ($Config.services) {
         foreach ($Svc in $Config.services) {
             $SvcName = $Svc.name
-            $DisplayName = $Svc.displayName
+            $DisplayName = if ($Svc.displayName) { $Svc.displayName } else { $SvcName }
 
             $ServiceObj = Get-Service -Name $SvcName -ErrorAction SilentlyContinue
             if ($ServiceObj) {
@@ -29,8 +35,17 @@ function Apply-ServiceAndTaskTweaks {
                     Log-DebloatAction "Service-Disable" "Stopped & Disabled service $SvcName"
                 }
                 catch {
-                    Write-RenderStatus "Failed to disable service $SvcName: $_" "Warning"
-                    Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
+                    # Fallback to sc.exe
+                    try {
+                        sc.exe stop "$SvcName" *>$null
+                        sc.exe config "$SvcName" start= disabled *>$null
+                        Write-RenderStatus "Disabled service via SC.EXE: $SvcName" "Success"
+                        Log-DebloatAction "Service-Disable" "Stopped & Disabled service via SC.EXE $SvcName"
+                    }
+                    catch {
+                        Write-RenderStatus "Failed to disable service $SvcName: $_" "Warning"
+                        Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
+                    }
                 }
             } else {
                 Write-RenderStatus "Service not present on system: $SvcName" "Muted"
@@ -43,21 +58,30 @@ function Apply-ServiceAndTaskTweaks {
         foreach ($Task in $Config.scheduled_tasks) {
             $TaskPath = $Task.path
             $TaskName = $Task.name
+            $FullTaskPath = "$TaskPath$TaskName"
 
-            $TaskObj = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
-            if ($TaskObj) {
-                try {
-                    Write-RenderStatus "Disabling scheduled task: $TaskPath$TaskName" "Info"
+            try {
+                $TaskObj = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
+                if ($TaskObj) {
+                    Write-RenderStatus "Disabling scheduled task: $FullTaskPath" "Info"
                     Disable-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction Stop | Out-Null
                     Write-RenderStatus "Disabled task: $TaskName" "Success"
-                    Log-DebloatAction "ScheduledTask-Disable" "Disabled task $TaskPath$TaskName"
+                    Log-DebloatAction "ScheduledTask-Disable" "Disabled task $FullTaskPath"
+                } else {
+                    Write-RenderStatus "Scheduled task not found: $FullTaskPath" "Muted"
+                }
+            }
+            catch {
+                # Fallback to schtasks.exe
+                try {
+                    schtasks.exe /change /tn "$FullTaskPath" /disable *>$null
+                    Write-RenderStatus "Disabled task via SCHTASKS.EXE: $TaskName" "Success"
+                    Log-DebloatAction "ScheduledTask-Disable" "Disabled task via SCHTASKS.EXE $FullTaskPath"
                 }
                 catch {
                     Write-RenderStatus "Failed to disable task $TaskName: $_" "Warning"
-                    Log-DebloatAction "ScheduledTask-Disable" "FAILED task $TaskPath$TaskName - $_"
+                    Log-DebloatAction "ScheduledTask-Disable" "FAILED task $FullTaskPath - $_"
                 }
-            } else {
-                Write-RenderStatus "Scheduled task not present: $TaskPath$TaskName" "Muted"
             }
         }
     }

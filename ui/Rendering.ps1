@@ -48,8 +48,7 @@ function Log-DebloatAction {
         [string]$Details
     )
     
-    $ScriptDir = Split-Path -Parent $PSScriptRoot
-    $LogDir = Join-Path $ScriptDir "logs"
+    $LogDir = if ($global:RootDir) { Join-Path $global:RootDir "logs" } else { Join-Path $PSScriptRoot "..\logs" }
     if (-not (Test-Path $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }
@@ -57,5 +56,5 @@ function Log-DebloatAction {
     $LogFile = Join-Path $LogDir "debloat_history.log"
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $Entry = "[$Timestamp] [$Category] $Details"
-    Add-Content -Path $LogFile -Value $Entry
+    Add-Content -Path $LogFile -Value $Entry -ErrorAction SilentlyContinue
 }
