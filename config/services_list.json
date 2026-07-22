@@ -1,0 +1,50 @@
+{
+  "services": [
+    {
+      "name": "DiagTrack",
+      "displayName": "Connected User Experiences and Telemetry",
+      "action": "Disable"
+    },
+    {
+      "name": "dmwappushservice",
+      "displayName": "Device Management Wireless Application Protocol Push message Routing Service",
+      "action": "Disable"
+    },
+    {
+      "name": "sysmain",
+      "displayName": "SysMain / Superfetch (Optional)",
+      "action": "Disable"
+    },
+    {
+      "name": "WerSvc",
+      "displayName": "Windows Error Reporting Service",
+      "action": "Disable"
+    }
+  ],
+  "scheduled_tasks": [
+    {
+      "path": "\\Microsoft\\Windows\\Application Experience\\",
+      "name": "Microsoft Compatibility Appraiser"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Application Experience\\",
+      "name": "ProgramDataUpdater"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Autochk\\",
+      "name": "Proxy"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+      "name": "Consolidator"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+      "name": "UsbCeip"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Feedback\\Siuf\\",
+      "name": "DmClient"
+    }
+  ]
+}

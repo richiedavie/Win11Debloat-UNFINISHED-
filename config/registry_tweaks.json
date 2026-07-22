@@ -1,0 +1,98 @@
+[
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+    "name": "TurnOffWindowsCopilot",
+    "type": "DWord",
+    "value": 1,
+    "description": "Hard disable Windows Copilot shell integration"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+    "name": "TurnOffWindowsCopilot",
+    "type": "DWord",
+    "value": 1,
+    "description": "Hard disable Windows Copilot shell integration for user"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "DisableAIDataAnalysis",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Recall local AI snapshot indexing data analysis"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "AllowRecallEnablement",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Recall enablement on Copilot+ PCs"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+    "name": "BingSearchEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Bing web search integration in Start Menu"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+    "name": "DisableSearchBoxSuggestions",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Start Menu web search suggestions"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+    "name": "AllowNewsAndInterests",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Taskbar Widgets feature"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "TaskbarDa",
+    "type": "DWord",
+    "value": 0,
+    "description": "Hide Widgets icon from Taskbar"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+    "name": "AllowTelemetry",
+    "type": "DWord",
+    "value": 0,
+    "description": "Set Windows Telemetry to Security (Disabled)"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\MicrosoftEdge\\Main",
+    "name": "ShowHubsSidebar",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge Copilot sidebar"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "DiscoverPageEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge Discover / Copilot AI button"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Input\\TIPC",
+    "name": "Enabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable AI typing insights diagnostic tracking"
+  }
+]
