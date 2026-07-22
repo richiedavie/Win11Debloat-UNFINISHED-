@@ -13,34 +13,29 @@ if (-not $RootDir) { $RootDir = Split-Path -Parent $MyInvocation.MyCommand.Defin
 if (-not $RootDir) { $RootDir = (Get-Location).Path }
 $global:RootDir = $RootDir
 
-
 $ConfigDir = Join-Path $RootDir "config"
 $ModulesDir = Join-Path $RootDir "modules"
 $UiDir = Join-Path $RootDir "ui"
 $BackupDir = Join-Path $RootDir "logs\registry_backups"
 
-# Safe Module Importer
-function Import-DebloatModule {
-    param ([string]$ModulePath)
+# Module files list
+$ModuleFiles = @(
+    (Join-Path $UiDir "Rendering.ps1"),
+    (Join-Path $UiDir "Menu.ps1"),
+    (Join-Path $ModulesDir "SafetyManager.ps1"),
+    (Join-Path $ModulesDir "AppxManager.ps1"),
+    (Join-Path $ModulesDir "RegistryManager.ps1"),
+    (Join-Path $ModulesDir "ServiceManager.ps1")
+)
+
+# Dot-source all modules directly in script scope
+foreach ($ModulePath in $ModuleFiles) {
     if (Test-Path -Path $ModulePath) {
-        try {
-            . $ModulePath
-        } catch {
-            Write-Host "[!] FATAL ERROR: Failed to load module script: $ModulePath" -ForegroundColor Red
-            Write-Host "    Details: $_" -ForegroundColor Yellow
-        }
+        . $ModulePath
     } else {
         Write-Host "[!] ERROR: Required module file missing at: $ModulePath" -ForegroundColor Red
     }
 }
-
-# Import UI and Engine Modules
-Import-DebloatModule (Join-Path $UiDir "Rendering.ps1")
-Import-DebloatModule (Join-Path $UiDir "Menu.ps1")
-Import-DebloatModule (Join-Path $ModulesDir "SafetyManager.ps1")
-Import-DebloatModule (Join-Path $ModulesDir "AppxManager.ps1")
-Import-DebloatModule (Join-Path $ModulesDir "RegistryManager.ps1")
-Import-DebloatModule (Join-Path $ModulesDir "ServiceManager.ps1")
 
 # Main Menu Execution Loop
 do {
