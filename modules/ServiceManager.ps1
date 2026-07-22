@@ -37,8 +37,8 @@ function Apply-ServiceAndTaskTweaks {
                 catch {
                     # Fallback to sc.exe
                     try {
-                        sc.exe stop "$SvcName" *>$null
-                        sc.exe config "$SvcName" start= disabled *>$null
+                        $null = sc.exe stop "$SvcName" 2>&1
+                        $null = sc.exe config "$SvcName" start= disabled 2>&1
                         Write-RenderStatus "Disabled service via SC.EXE: $SvcName" "Success"
                         Log-DebloatAction "Service-Disable" "Stopped & Disabled service via SC.EXE $SvcName"
                     }
@@ -74,7 +74,7 @@ function Apply-ServiceAndTaskTweaks {
             catch {
                 # Fallback to schtasks.exe
                 try {
-                    schtasks.exe /change /tn "$FullTaskPath" /disable *>$null
+                    $null = schtasks.exe /change /tn "$FullTaskPath" /disable 2>&1
                     Write-RenderStatus "Disabled task via SCHTASKS.EXE: $TaskName" "Success"
                     Log-DebloatAction "ScheduledTask-Disable" "Disabled task via SCHTASKS.EXE $FullTaskPath"
                 }

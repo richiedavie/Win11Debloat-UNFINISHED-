@@ -44,7 +44,7 @@ function Backup-RegistryKey {
     Write-RenderStatus "Backing up registry key $Hive\$Path..." "Info"
     try {
         $RegPath = "$Hive\$Path"
-        reg export "$RegPath" "$TargetFile" /y *>$null
+        $null = reg export "$RegPath" "$TargetFile" /y 2>&1
         Log-DebloatAction "Backup-RegistryKey" "Exported $RegPath to $TargetFile"
     }
     catch {

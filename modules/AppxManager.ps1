@@ -72,7 +72,7 @@ function Remove-DebloatAppxPackages {
                 catch {
                     try {
                         # Fallback to DISM command line tool
-                        dism.exe /Online /Remove-ProvisionedAppxPackage /PackageName:"$($ProvPkg.PackageName)" *>$null
+                        $null = dism.exe /Online /Remove-ProvisionedAppxPackage /PackageName:"$($ProvPkg.PackageName)" 2>&1
                         Write-RenderStatus "Purged provisioned package via DISM.EXE: $($ProvPkg.PackageName)" "Success"
                         Log-DebloatAction "AppX-Provisioned-Purge" "Purged via DISM.EXE $($ProvPkg.PackageName)"
                     } catch {

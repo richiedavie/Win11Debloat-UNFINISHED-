@@ -31,15 +31,19 @@ function Apply-RegistryTweaks {
         # Backup key before modification
         Backup-RegistryKey -Hive $Hive -Path $Path -BackupDir $BackupDir
 
-        $FullRegistryPath = "Registry::$Hive\$Path"
+        $PsDrivePath = "$Hive:\$Path"
 
         try {
-            if (-not (Test-Path $FullRegistryPath)) {
-                New-Item -Path $FullRegistryPath -Force | Out-Null
+            if (-not (Test-Path -Path $PsDrivePath)) {
+                New-Item -Path $PsDrivePath -Force | Out-Null
             }
 
-            # Use New-ItemProperty with -PropertyType for universal compatibility (PS 5.1 & PS 7+)
-            New-ItemProperty -Path $FullRegistryPath -Name $Name -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
+            if (Get-ItemProperty -Path $PsDrivePath -Name $Name -ErrorAction SilentlyContinue) {
+                Set-ItemProperty -Path $PsDrivePath -Name $Name -Value $Value -Force -ErrorAction Stop | Out-Null
+            } else {
+                New-ItemProperty -Path $PsDrivePath -Name $Name -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
+            }
+
             Write-RenderStatus "Applied: [$Hive\$Path] $Name = $Value ($Description)" "Success"
             Log-DebloatAction "Registry-Tweak" "Applied [$Hive\$Path] $Name = $Value"
         }
@@ -48,7 +52,7 @@ function Apply-RegistryTweaks {
             try {
                 $RegHive = if ($Hive -eq "HKLM") { "HKLM" } else { "HKCU" }
                 $RegType = if ($Type -eq "DWord") { "REG_DWORD" } else { "REG_SZ" }
-                reg add "$RegHive\$Path" /v "$Name" /t $RegType /d "$Value" /f *>$null
+                $null = reg add "$RegHive\$Path" /v "$Name" /t $RegType /d "$Value" /f 2>&1
                 Write-RenderStatus "Applied via REG.EXE: [$Hive\$Path] $Name = $Value ($Description)" "Success"
                 Log-DebloatAction "Registry-Tweak" "Applied via REG.EXE [$Hive\$Path] $Name = $Value"
             }
