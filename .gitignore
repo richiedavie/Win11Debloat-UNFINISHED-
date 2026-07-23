@@ -1,4 +1,6 @@
 logs/
 *.log
 *.tmp
+*.reg
+state_manifest_latest.json
 .vs/

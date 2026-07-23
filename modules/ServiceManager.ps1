@@ -45,7 +45,7 @@ function Apply-ServiceAndTaskTweaks {
                         Log-DebloatAction "Service-Disable" "Stopped & Disabled service via SC.EXE $SvcName"
                     }
                     catch {
-                        Write-RenderStatus "Failed to disable service $SvcName: $_" "Warning"
+                        Write-RenderStatus "Failed to disable service $($SvcName): $_" "Warning"
                         Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
                     }
                 }
@@ -81,7 +81,7 @@ function Apply-ServiceAndTaskTweaks {
                     Log-DebloatAction "ScheduledTask-Disable" "Disabled task via SCHTASKS.EXE $FullTaskPath"
                 }
                 catch {
-                    Write-RenderStatus "Failed to disable task $TaskName: $_" "Warning"
+                        Write-RenderStatus "Failed to disable task $($TaskName): $_" "Warning"
                     Log-DebloatAction "ScheduledTask-Disable" "FAILED task $FullTaskPath - $_"
                 }
             }

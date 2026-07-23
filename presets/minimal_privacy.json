@@ -1,0 +1,12 @@
+{
+  "name": "Minimal Privacy",
+  "description": "Conservative tweaks: telemetry disabled, basic bloat removed, preserves most services for stability.",
+  "include_ai_neutralization": false,
+  "include_appx_purge": true,
+  "include_registry_tweaks": true,
+  "include_services_disable": false,
+  "ai_components_config": "ai_components.json",
+  "bloatware_config": "bloatware_apps.json",
+  "registry_config": "registry_tweaks.json",
+  "services_config": "services_list.json"
+}

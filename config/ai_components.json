@@ -1,0 +1,77 @@
+{
+  "registry_policies": [
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+      "name": "DisableAIDataAnalysis",
+      "type": "DWord",
+      "value": 1,
+      "description": "Disable Recall local AI snapshot indexing data analysis"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+      "name": "AllowRecallEnablement",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Recall enablement on Copilot+ PCs"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+      "name": "AllowCopilot",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Windows Copilot for current user"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+      "name": "TurnOnWindowsCopilot",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Windows Copilot system-wide"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "ShowCopilotButton",
+      "type": "DWord",
+      "value": 0,
+      "description": "Hide Copilot taskbar button"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "DITPrevalence",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Click to Do / Design Intelligent Text experience"
+    }
+  ],
+  "services": [
+    {
+      "name": "WSAIFabricSvc",
+      "displayName": "Windows AI Fabric Service",
+      "action": "Disable"
+    },
+    {
+      "name": "OneDrive",
+      "displayName": "Microsoft OneDrive (Optional AI sync)",
+      "action": "Disable"
+    }
+  ],
+  "appx_packages": [
+    "Microsoft.549981C3F5F10",
+    "Microsoft.Windows.AI.Copilot",
+    "Microsoft.Windows.PinToAI",
+    "Clipchamp.Clipchamp",
+    "Microsoft.Windows.Photos",
+    "Microsoft.Paint"
+  ],
+  "edge_extensions": [
+    "aeblfdkhhhdcdjpifbpbbaagphkhhocb",
+    "caagbbbjlkobaolfbcoebcagfljkagnp",
+    "fihnjjcciajhdojfncpmddlloeokgbbi"
+  ]
+}

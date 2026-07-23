@@ -6,10 +6,7 @@ function Create-Win11RestorePoint {
     )
     Write-RenderStatus "Initiating System Restore Point creation..." "Info"
     try {
-        # Enable System Restore on C:\ if disabled
-        Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
-        
-        # Suppress 24-hour limit warning noise
+        # Checkpoint-Computer will auto-enable restore if needed on client SKUs
         $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
         Write-RenderStatus "Successfully created System Restore Point: '$Description'" "Success"
         Log-DebloatAction "Create-RestorePoint" "Successfully created System Restore Point: $Description"

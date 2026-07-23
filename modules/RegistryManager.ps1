@@ -64,7 +64,7 @@ function Apply-RegistryTweaks {
                 Log-DebloatAction "Registry-Tweak" "Applied via REG.EXE [${Hive}\$Path] $Name = $Value"
             }
             catch {
-                Write-RenderStatus "Failed to apply registry tweak [${Hive}\$Path] $Name: $_" "Warning"
+                Write-RenderStatus "Failed to apply registry tweak [${Hive}\$Path] $($Name): $_" "Warning"
                 Log-DebloatAction "Registry-Tweak" "FAILED [${Hive}\$Path] $Name - $_"
             }
         }
