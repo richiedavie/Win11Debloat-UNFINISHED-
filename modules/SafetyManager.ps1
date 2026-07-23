@@ -1,12 +1,46 @@
 # SafetyManager.ps1 - Manages System Restore Points and Registry Backups
 
+function Enable-VolumeShadowCopy {
+    try {
+        $vssSvc = Get-Service -Name "VSS" -ErrorAction SilentlyContinue
+        if (-not $vssSvc) { return $true }
+
+        if ($vssSvc.Status -ne 'Running') {
+            Write-RenderStatus "Starting Volume Shadow Copy service for restore point support..." "Info"
+            if ($vssSvc.StartType -eq 'Disabled') {
+                try {
+                    Set-Service -Name "VSS" -StartupType Manual -ErrorAction Stop | Out-Null
+                } catch {
+                    $null = sc.exe config "VSS" start= demand 2>&1 | Out-Null
+                }
+            }
+            try {
+                Start-Service -Name "VSS" -ErrorAction Stop | Out-Null
+            } catch {
+                $null = sc.exe start "VSS" 2>&1 | Out-Null
+            }
+            Write-RenderStatus "Volume Shadow Copy service started." "Success"
+        }
+        return $true
+    } catch {
+        Write-RenderStatus "Volume Shadow Copy service unavailable: $_" "Warning"
+        return $false
+    }
+}
+
 function Create-Win11RestorePoint {
     param (
         [string]$Description = "Win11Debloat Auto-Restore Point"
     )
     Write-RenderStatus "Initiating System Restore Point creation..." "Info"
     try {
-        # Checkpoint-Computer will auto-enable restore if needed on client SKUs
+        $vssReady = Enable-VolumeShadowCopy
+        if (-not $vssReady) {
+            Write-RenderStatus "Skipping restore point - VSS service unavailable." "Warning"
+            Log-DebloatAction "Create-RestorePoint" "Skipped (VSS unavailable)"
+            return $false
+        }
+
         $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
         Write-RenderStatus "Successfully created System Restore Point: '$Description'" "Success"
         Log-DebloatAction "Create-RestorePoint" "Successfully created System Restore Point: $Description"

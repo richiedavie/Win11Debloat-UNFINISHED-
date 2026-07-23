@@ -94,5 +94,125 @@
     "type": "DWord",
     "value": 0,
     "description": "Disable AI typing insights diagnostic tracking"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "StartupBoostEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge Startup Boost background processes"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "PrelaunchEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge prelaunch at Windows startup"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "BackgroundModeEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge background apps and extensions running"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "TaskbarMn",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Taskbar Widgets / News and Interests"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "ContentDeliveryAllowed",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block Windows Spotlight and suggested content delivery"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "SoftLandingEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block Windows feature update soft landing announcements"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "SilentInstalledAppsEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block Microsoft Store from silently installing suggested apps"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "SubscribedContent-338389Enabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block Windows Spotlight on lock screen"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "SubscribedContent-310093Enabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block suggested apps in Start Menu"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+    "name": "AllowGameDVR",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Xbox Game DVR recording"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+    "name": "AppCaptureEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Game DVR app capture"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+    "name": "GameDVR_Enabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Game DVR for current user"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\GameBar",
+    "name": "AllowAutoGameMode",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Xbox Game Bar auto Game Mode"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "ExcludeWUDriversInQualityUpdate",
+    "type": "DWord",
+    "value": 0,
+    "description": "Exclude driver updates from Windows quality updates"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "NoAutoUpdate",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable automatic Windows updates (manual only)"
   }
 ]

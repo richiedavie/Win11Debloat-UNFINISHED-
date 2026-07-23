@@ -45,12 +45,16 @@ function Remove-DebloatAppxPackages {
                 }
                 catch {
                     try {
-                        # Fallback for current user only if -AllUsers fails
                         Remove-AppxPackage -Package $Pkg.PackageFullName -ErrorAction Stop
                         Log-DebloatAction "AppX-User-Remove" "Removed (CurrentUser) $($Pkg.PackageFullName)"
                     } catch {
-                        Write-RenderStatus "Failed to remove user package $($Pkg.PackageFullName): $_" "Warning"
-                        Log-DebloatAction "AppX-User-Remove" "FAILED: $($Pkg.PackageFullName) - $_"
+                        if ($_ -match "0x80073CFA|part of Windows|cannot be uninstalled|Turn Windows Features") {
+                            Write-RenderStatus "Protected system app (skipped): $($Pkg.PackageFullName)" "Muted"
+                            Log-DebloatAction "AppX-User-Remove" "SKIPPED (protected system app): $($Pkg.PackageFullName)"
+                        } else {
+                            Write-RenderStatus "Failed to remove user package $($Pkg.PackageFullName): $_" "Warning"
+                            Log-DebloatAction "AppX-User-Remove" "FAILED: $($Pkg.PackageFullName) - $_"
+                        }
                     }
                 }
             }

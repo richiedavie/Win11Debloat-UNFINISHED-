@@ -187,20 +187,27 @@ function Invoke-AiComponentNeutralization {
                     New-Item -Path $EdgePolicyPath -Force | Out-Null
                 }
 
-                $Blocklist = @()
-                if (Get-ItemProperty -Path $EdgePolicyPath -Name $ExtensionBlocklist -ErrorAction SilentlyContinue) {
-                    $Blocklist = (Get-ItemProperty -Path $EdgePolicyPath -Name $ExtensionBlocklist).$ExtensionBlocklist
-                    if (-not $Blocklist) { $Blocklist = @() }
+                $ExistingBlocklist = Get-ItemProperty -Path $EdgePolicyPath -Name $ExtensionBlocklist -ErrorAction SilentlyContinue
+                [string[]]$Blocklist = @()
+                if ($ExistingBlocklist -and $ExistingBlocklist.$ExtensionBlocklist) {
+                    $Blocklist = $ExistingBlocklist.$ExtensionBlocklist | ForEach-Object { [string]$_ }
                 }
                 if ($Blocklist -notcontains $ExtId) {
                     $Blocklist += $ExtId
                 }
 
-                Set-ItemProperty -Path $EdgePolicyPath -Name $ExtensionBlocklist -Value $Blocklist -Force -ErrorAction Stop | Out-Null
+                Set-ItemProperty -Path $EdgePolicyPath -Name $ExtensionBlocklist -Value ([string[]]$Blocklist) -Force -ErrorAction Stop | Out-Null
                 Write-RenderStatus "Blocked Edge AI extension: $ExtId" "Success"
                 Log-DebloatAction "AI-Edge-Block" "Blocked extension $ExtId"
             } catch {
-                Write-RenderStatus "Failed to block Edge extension $ExtId : $_" "Warning"
+                try {
+                    $regCmd = "reg add `"HKLM\SOFTWARE\Policies\Microsoft\Edge`" /v `"ExtensionInstallBlocklist`" /t REG_MULTI_SZ /d `"$ExtId`" /f"
+                    $null = cmd.exe /c $regCmd 2>&1
+                    Write-RenderStatus "Blocked Edge AI extension via REG.EXE: $ExtId" "Success"
+                    Log-DebloatAction "AI-Edge-Block" "Blocked extension $ExtId via REG.EXE"
+                } catch {
+                    Write-RenderStatus "Failed to block Edge extension $ExtId : $_" "Warning"
+                }
             }
         }
     }

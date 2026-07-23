@@ -19,6 +19,51 @@
       "name": "WerSvc",
       "displayName": "Windows Error Reporting Service",
       "action": "Disable"
+    },
+    {
+      "name": "EdgeUpdate",
+      "displayName": "Microsoft Edge Update Service",
+      "action": "Disable"
+    },
+    {
+      "name": "WSearch",
+      "displayName": "Windows Search Indexer",
+      "action": "Disable"
+    },
+    {
+      "name": "BthAvctpSvc",
+      "displayName": "AVCTP Service (Bluetooth audio)",
+      "action": "Disable"
+    },
+    {
+      "name": "OneDrive",
+      "displayName": "OneDrive",
+      "action": "Disable"
+    },
+    {
+      "name": "XblAuthManager",
+      "displayName": "Xbox Live Auth Manager",
+      "action": "Disable"
+    },
+    {
+      "name": "XblGameSave",
+      "displayName": "Xbox Live Game Save",
+      "action": "Disable"
+    },
+    {
+      "name": "XboxNetApiSvc",
+      "displayName": "Xbox Live Networking Service",
+      "action": "Disable"
+    },
+    {
+      "name": "Fax",
+      "displayName": "Fax",
+      "action": "Disable"
+    },
+    {
+      "name": "retimgquery",
+      "displayName": "Remote Image Query",
+      "action": "Disable"
     }
   ],
   "scheduled_tasks": [
@@ -29,6 +74,18 @@
     {
       "path": "\\Microsoft\\Windows\\Application Experience\\",
       "name": "ProgramDataUpdater"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Application Experience\\",
+      "name": "AitAgent"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Application Experience\\",
+      "name": "PublishToCAD"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Application Experience\\",
+      "name": "StartupAppTask"
     },
     {
       "path": "\\Microsoft\\Windows\\Autochk\\",
@@ -43,8 +100,116 @@
       "name": "UsbCeip"
     },
     {
+      "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+      "name": "KernelCeipTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+      "name": "PcaPatchDbCleanup"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\",
+      "name": "BthSQM"
+    },
+    {
       "path": "\\Microsoft\\Windows\\Feedback\\Siuf\\",
       "name": "DmClient"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SoftwareProtectionPlatform\\",
+      "name": "SvcRestartLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SoftwareProtectionPlatform\\",
+      "name": "SvcRestartNetwork"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SoftwareProtectionPlatform\\",
+      "name": "SvcRestartTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SoftwareProtectionPlatform\\",
+      "name": "SvcRestartTaskLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SoftwareProtectionPlatform\\",
+      "name": "SvcRestartTaskNetwork"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Defrag\\",
+      "name": "ScheduledDefrag"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\DiskDiagnostic\\",
+      "name": "Microsoft-Windows-DiskDiagnosticDataCollector"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Maps\\",
+      "name": "MapTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Maps\\",
+      "name": "MapUpdateTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Power Efficiency Diagnostics\\",
+      "name": "AnalyzeSystem"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Power Efficiency Diagnostics\\",
+      "name": "ResolvePri"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\EdgeUpdate\\",
+      "name": "EdgeUpdate"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\EdgeUpdate\\",
+      "name": "EdgeUpdateLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\EdgeUpdate\\",
+      "name": "EdgeUpdateTaskMachineCore"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\EdgeUpdate\\",
+      "name": "EdgeUpdateTaskMachineUA"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Connected User Experiences and Telemetry\\",
+      "name": "Consolidator"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Connected User Experiences and Telemetry\\",
+      "name": "Uploader"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Shell\\FamilySafety\\",
+      "name": "FamilySafetyUpload"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Shell\\FamilySafety\\",
+      "name": "FamilySafetyRefresh"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\WindowsUpdate\\",
+      "name": "Onetime"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\WindowsUpdate\\",
+      "name": "SvcRestartTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\WindowsUpdate\\",
+      "name": "SvcRestartTaskLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\WindowsUpdate\\",
+      "name": "SvcRestartTaskNetwork"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Plug and Play\\",
+      "name": "PnpCleanup"
     }
   ]
 }
