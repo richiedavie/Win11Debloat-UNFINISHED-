@@ -64,6 +64,81 @@
       "name": "retimgquery",
       "displayName": "Remote Image Query",
       "action": "Disable"
+    },
+    {
+      "name": "WSAIFabricSvc",
+      "displayName": "Windows AI Fabric Service",
+      "action": "Disable"
+    },
+    {
+      "name": "WpnService",
+      "displayName": "Windows Push Notification Service",
+      "action": "Disable"
+    },
+    {
+      "name": "OneDriveSvr",
+      "displayName": "OneDrive Update Service",
+      "action": "Disable"
+    },
+    {
+      "name": "MapsBroker",
+      "displayName": "Windows Maps Manager",
+      "action": "Disable"
+    },
+    {
+      "name": "PhoneSvc",
+      "displayName": "Phone Service",
+      "action": "Disable"
+    },
+    {
+      "name": "wisvc",
+      "displayName": "Windows Insider Service",
+      "action": "Disable"
+    },
+    {
+      "name": "WMPNetworkSvc",
+      "displayName": "Windows Media Player Network Sharing Service",
+      "action": "Disable"
+    },
+    {
+      "name": "lltdsvc",
+      "displayName": "Link-Layer Topology Discovery Mapper",
+      "action": "Disable"
+    },
+    {
+      "name": "SSDPSRV",
+      "displayName": "SSDP Discovery",
+      "action": "Disable"
+    },
+    {
+      "name": "upnphost",
+      "displayName": "UPnP Device Host",
+      "action": "Disable"
+    },
+    {
+      "name": "DPS",
+      "displayName": "Diagnostic Policy Service",
+      "action": "Disable"
+    },
+    {
+      "name": "SharedAccess",
+      "displayName": "Internet Connection Sharing (ICS)",
+      "action": "Disable"
+    },
+    {
+      "name": "RemoteRegistry",
+      "displayName": "Remote Registry",
+      "action": "Disable"
+    },
+    {
+      "name": "WbioSrvc",
+      "displayName": "Windows Biometric Service",
+      "action": "Disable"
+    },
+    {
+      "name": "FrameServer",
+      "displayName": "Windows Camera Frame Server",
+      "action": "Disable"
     }
   ],
   "scheduled_tasks": [
@@ -210,6 +285,106 @@
     {
       "path": "\\Microsoft\\Windows\\Plug and Play\\",
       "name": "PnpCleanup"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Task Manager\\",
+      "name": "EmptyStandbyList"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Time Synchronization\\",
+      "name": "SynchronizeTime"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Time Zone\\",
+      "name": "SynchronizeTimeZone"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Maintenance\\",
+      "name": "WinSAT"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Maintenance\\",
+      "name": "Diagnostic"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Maintenance\\",
+      "name": "PlatformDiagnosticAndPerformanceState"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\RecoveryEnvironment\\",
+      "name": "VerifyWinRE"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SecurityCenter\\",
+      "name": "SvcRestartTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SecurityCenter\\",
+      "name": "SvcRestartTaskLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\SecurityCenter\\",
+      "name": "SvcRestartTaskNetwork"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Work Folders\\",
+      "name": "Work Folders Logon Synchronization"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Work Folders\\",
+      "name": "Work Folders Policy Maintenace"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Work Folders\\",
+      "name": "Work Folders Policy Fast Path"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\XblGameSave\\",
+      "name": "XblGameSaveTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\XblGameSave\\",
+      "name": "XblGameSaveTaskLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\XblGameSave\\",
+      "name": "XblGameSaveTaskNetwork"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Fax\\",
+      "name": "FaxCounterRollup"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Fax\\",
+      "name": "FaxPurge"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Printing\\",
+      "name": "PrintJobCleanup"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Printing\\",
+      "name": "PrintQueueCleanup"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\Printing\\",
+      "name": "PrintWakeUp"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\AppID\\",
+      "name": "PolicyConverter"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\CertificateServicesClient\\",
+      "name": "UserTask"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\CertificateServicesClient\\",
+      "name": "UserTaskLogon"
+    },
+    {
+      "path": "\\Microsoft\\Windows\\CertificateServicesClient\\",
+      "name": "UserTaskNetwork"
     }
   ]
 }

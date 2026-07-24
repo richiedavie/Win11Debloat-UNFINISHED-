@@ -14,7 +14,17 @@
     "MicrosoftTeams",
     "Microsoft.Office.OneNote",
     "Microsoft.Office.Omnibooks",
-    "Microsoft.Office.OfficeHub"
+    "Microsoft.Office.OfficeHub",
+    "Microsoft.Windows.PinToAI",
+    "Microsoft.Windows.Copilot.Host",
+    "Microsoft.Windows.AI.Copilot.Host",
+    "Microsoft.Windows.Widgets Platform",
+    "Microsoft.Advertising",
+    "Microsoft.BioEnrollment",
+    "Microsoft.Xbox.TCUI",
+    "Microsoft.MicrosoftEdge.ServicesUpdater",
+    "Microsoft.MicrosoftEdge.ShadowCrust",
+    "Microsoft.MicrosoftEdgeDevToolsClient"
   ],
   "stock_bloatware_apps": [
     "GamingApp",
@@ -72,7 +82,21 @@
     "Microsoft.PrintExperienceHost",
     "Microsoft.MicrosoftEdge.ShadowCrust",
     "Microsoft.MicrosoftEdgeDevToolsClient",
+    "Microsoft.Xbox.TCUI",
+    "Microsoft.Advertising",
+    "Microsoft.BioEnrollment",
+    "Microsoft.MicrosoftEdge.ServicesUpdater",
+    "Microsoft.Windows.PinToAI",
+    "Microsoft.Windows.Copilot.Host",
+    "Microsoft.Windows.AI.Copilot.Host",
     "Microsoft.ZuneVideo",
-    "Microsoft.ZuneMusic"
+    "Microsoft.ZuneMusic",
+    "Microsoft.XboxGameOverlay",
+    "Microsoft.XboxGamingOverlay",
+    "Microsoft.Windows.AppRep.ChxApp",
+    "Microsoft.Windows.CloudExperienceHost",
+    "Microsoft.Windows.IoTShellOnboarding",
+    "Microsoft.Windows.PinToAI",
+    "Microsoft.Windows.Widgets"
   ]
 }

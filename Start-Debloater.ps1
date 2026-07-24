@@ -31,7 +31,6 @@ $ModuleFiles = @(
     (Join-Path $ModulesDir "RollbackEngine.ps1")
 )
 
-# Dot-source all modules directly in script scope
 foreach ($ModulePath in $ModuleFiles) {
     if (Test-Path -Path $ModulePath) {
         . $ModulePath
@@ -48,7 +47,8 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # 5. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
-if (-not (Test-Win11DebloatTargetBuild -MinBuild 26100)) {
+$TargetBuild = 26100
+if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Write-Host "[!] Unsupported OS build detected. Exiting." -ForegroundColor Red
     Read-Host "`nPress Enter to exit..."
     Exit 1
@@ -105,17 +105,24 @@ try {
     $RegistryPaths = @(
         "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot",
         "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI",
-        "HKCU\Software\Policies\Microsoft\Windows\WindowsCopilot",
-        "HKCU\Software\Microsoft\Windows\CurrentVersion\Search",
-        "HKLM\SOFTWARE\Policies\Microsoft\Dsh",
-        "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
         "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection",
         "HKLM\SOFTWARE\Policies\Microsoft\MicrosoftEdge\Main",
         "HKLM\SOFTWARE\Policies\Microsoft\Edge",
-        "HKCU\Software\Microsoft\Input\TIPC"
+        "HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate",
+        "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate",
+        "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR",
+        "HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization",
+        "HKCU\Software\Policies\Microsoft\Windows\WindowsCopilot",
+        "HKCU\Software\Microsoft\Windows\CurrentVersion\Search",
+        "HKCU\Software\Policies\Microsoft\Windows\Explorer",
+        "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+        "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager",
+        "HKCU\Software\Microsoft\Input\TIPC",
+        "HKCU\Software\Microsoft\GameBar",
+        "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR"
     )
-    $ServiceNames = @("DiagTrack","dmwappushservice","sysmain","WerSvc","WSAIFabricSvc","OneDrive")
-    $AppxTargets = @("Copilot","549981C3F5F10","XboxApp","BingWeather","SpotifyMusic","Clipchamp")
+    $ServiceNames = @("DiagTrack","dmwappushservice","sysmain","WerSvc","WSAIFabricSvc","OneDrive","EdgeUpdate","WSearch","WpnService","MapsBroker","PhoneSvc")
+    $AppxTargets = @("Copilot","549981C3F5F10","XboxApp","BingWeather","SpotifyMusic","Clipchamp","MicrosoftTeams","PowerAutomateDesktop","YourPhone","SkypeApp","Print3D","ZuneVideo","ZuneMusic")
     New-SystemStateManifest -OutputPath $ManifestPath -RegistryPaths $RegistryPaths -ServiceNames $ServiceNames -AppxPackages $AppxTargets
 } catch {
     Write-RenderStatus "Could not generate initial state manifest: $_" "Warning"
@@ -145,6 +152,10 @@ if (Test-Path $PresetsDir) {
     }
 }
 
+Write-Host "  [$PresetIndex] Deep Debloat (all modules aggressive)" -ForegroundColor Yellow
+$PresetList += "deep"
+$PresetIndex++
+
 Write-Host "  [$PresetIndex] Skip preset (manual selection)" -ForegroundColor DarkGray
 $PresetList += "manual"
 
@@ -164,11 +175,17 @@ do {
 
 if ($SelectedPreset -eq "manual") {
     Write-Host "`nManual mode selected. You will choose individual operations from the menu." -ForegroundColor Yellow
+} elseif ($SelectedPreset -eq "deep") {
+    Write-Host "`nDeep Debloat selected. All modules will run aggressively." -ForegroundColor Yellow
+    $PresetLoaded = $true
 } else {
     Write-RenderStatus "Preset loaded: $SelectedPreset" "Success"
 }
 
-$PresetConfigs = Resolve-PresetConfigs -PresetFile $SelectedPreset
+$PresetConfigs = @{}
+if ($SelectedPreset -ne "deep" -and $SelectedPreset -ne "manual") {
+    $PresetConfigs = Resolve-PresetConfigs -PresetFile $SelectedPreset
+}
 
 # 10. Main Menu Execution Loop
 do {
@@ -181,26 +198,28 @@ do {
 
             $null = Create-Win11RestorePoint -Description "Win11Debloat Full System Cleanup"
 
-            if ($PresetConfigs.flags.ai) {
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.ai) {
                 Write-RenderStatus "Running AI Component Neutralization..." "Info"
-                Invoke-AiComponentNeutralization -ConfigPath $PresetConfigs.ai
+                $AiCfg = Join-Path $ConfigDir "ai_components.json"
+                if (-not (Test-Path $AiCfg)) { $AiCfg = $PresetConfigs.ai }
+                Invoke-AiComponentNeutralization -ConfigPath $AiCfg
             }
 
-            if ($PresetConfigs.flags.appx) {
-                $AppxCfg = $PresetConfigs.bloatware
-                if (-not $AppxCfg) { $AppxCfg = (Join-Path $ConfigDir "bloatware_apps.json") }
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.appx) {
+                $AppxCfg = Join-Path $ConfigDir "bloatware_apps.json"
+                if (-not $PresetConfigs.bloatware) { $AppxCfg = $PresetConfigs.bloatware }
                 Remove-DebloatAppxPackages -ConfigPath $AppxCfg
             }
 
-            if ($PresetConfigs.flags.registry) {
-                $RegCfg = $PresetConfigs.registry
-                if (-not $RegCfg) { $RegCfg = (Join-Path $ConfigDir "registry_tweaks.json") }
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.registry) {
+                $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
+                if (-not $PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
                 Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
             }
 
-            if ($PresetConfigs.flags.services) {
-                $SvcCfg = $PresetConfigs.services
-                if (-not $SvcCfg) { $SvcCfg = (Join-Path $ConfigDir "services_list.json") }
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.services) {
+                $SvcCfg = Join-Path $ConfigDir "services_list.json"
+                if (-not $PresetConfigs.services) { $SvcCfg = $PresetConfigs.services }
                 Apply-ServiceAndTaskTweaks -ConfigPath $SvcCfg
             }
 
@@ -210,32 +229,32 @@ do {
         "2" {
             Show-HeaderBanner
             $null = Create-Win11RestorePoint -Description "Win11Debloat AppX Purge Backup"
-            $AppxCfg = $PresetConfigs.bloatware
-            if (-not $AppxCfg) { $AppxCfg = (Join-Path $ConfigDir "bloatware_apps.json") }
+            $AppxCfg = Join-Path $ConfigDir "bloatware_apps.json"
+            if ($PresetConfigs.bloatware) { $AppxCfg = $PresetConfigs.bloatware }
             Remove-DebloatAppxPackages -ConfigPath $AppxCfg
             Read-Host "`nPress Enter to return to menu..."
         }
         "3" {
             Show-HeaderBanner
             $null = Create-Win11RestorePoint -Description "Win11Debloat Registry Tweaks Backup"
-            $RegCfg = $PresetConfigs.registry
-            if (-not $RegCfg) { $RegCfg = (Join-Path $ConfigDir "registry_tweaks.json") }
+            $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
+            if ($PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
             Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
             Read-Host "`nPress Enter to return to menu..."
         }
         "4" {
             Show-HeaderBanner
             $null = Create-Win11RestorePoint -Description "Win11Debloat Services Tweak Backup"
-            $SvcCfg = $PresetConfigs.services
-            if (-not $SvcCfg) { $SvcCfg = (Join-Path $ConfigDir "services_list.json") }
+            $SvcCfg = Join-Path $ConfigDir "services_list.json"
+            if ($PresetConfigs.services) { $SvcCfg = $PresetConfigs.services }
             Apply-ServiceAndTaskTweaks -ConfigPath $SvcCfg
             Read-Host "`nPress Enter to return to menu..."
         }
         "5" {
             Show-HeaderBanner
             Write-RenderStatus "Starting AI Component Neutralization..." "Header"
-            $AiCfg = $PresetConfigs.ai
-            if (-not $AiCfg) { $AiCfg = (Join-Path $ConfigDir "ai_components.json") }
+            $AiCfg = Join-Path $ConfigDir "ai_components.json"
+            if ($PresetConfigs.ai) { $AiCfg = $PresetConfigs.ai }
             if (-not (Test-Path $AiCfg)) {
                 Write-RenderStatus "AI components config missing at: $AiCfg" "Error"
             } else {

@@ -112,7 +112,7 @@ function Invoke-AiComponentNeutralization {
             $FoundAny = $false
 
             $MatchingUserPkgs = $AllUserPackages | Where-Object { 
-                $_.Name -like "*$AppName*" -or $_.PackageFullName -like "*$AppName*"
+                $_.Name -like "*$AppName*" -or $_.PackageFullName -like "*$AppName*" -or $_.PackageFamilyName -like "*$AppName*"
             }
 
             if ($MatchingUserPkgs) {
@@ -206,7 +206,15 @@ function Invoke-AiComponentNeutralization {
                     Write-RenderStatus "Blocked Edge AI extension via REG.EXE: $ExtId" "Success"
                     Log-DebloatAction "AI-Edge-Block" "Blocked extension $ExtId via REG.EXE"
                 } catch {
-                    Write-RenderStatus "Failed to block Edge extension $ExtId : $_" "Warning"
+                    try {
+                        $escapedExt = $ExtId -replace '\\', '\\\\'
+                        $regCmd = "powershell.exe -Command `"Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge' -Name 'ExtensionInstallBlocklist' -Value ([string[]]@('$escapedExt')) -Force`""
+                        $null = cmd.exe /c $regCmd 2>&1
+                        Write-RenderStatus "Blocked Edge AI extension via PowerShell hybrid: $ExtId" "Success"
+                        Log-DebloatAction "AI-Edge-Block" "Blocked extension $ExtId via PowerShell hybrid"
+                    } catch {
+                        Write-RenderStatus "Failed to block Edge extension $ExtId : $_" "Warning"
+                    }
                 }
             }
         }

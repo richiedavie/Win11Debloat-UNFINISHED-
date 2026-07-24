@@ -20,12 +20,46 @@ $RegistryDisableMap = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\EdgeUpdate" = @{ "Start" = 4 }
         "HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate" = @{ "AutoUpdateCheckPeriodMinutes" = 0; "UpdateDefault" = 0 }
     }
+    "WSAIFabricSvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\WSAIFabricSvc" = @{ "Start" = 4 }
+    }
+    "WpnService" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\WpnService" = @{ "Start" = 4 }
+        "HKLM\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications" = @{ "NoCloudApplicationNotification" = 1; "NoToastApplicationNotification" = 1 }
+    }
+    "OneDriveSvr" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\OneDriveSvr" = @{ "Start" = 4 }
+    }
+    "MapsBroker" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\MapsBroker" = @{ "Start" = 4 }
+    }
+    "PhoneSvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\PhoneSvc" = @{ "Start" = 4 }
+    }
+    "wisvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\wisvc" = @{ "Start" = 4 }
+    }
+    "WMPNetworkSvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\WMPNetworkSvc" = @{ "Start" = 4 }
+    }
+    "DPS" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\DPS" = @{ "Start" = 4 }
+    }
+    "RemoteRegistry" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\RemoteRegistry" = @{ "Start" = 4 }
+    }
+    "FrameServer" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\FrameServer" = @{ "Start" = 4 }
+    }
+    "WbioSrvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\WbioSrvc" = @{ "Start" = 4 }
+    }
 }
 
 function Stop-StubbornService {
     param(
         [string]$ServiceName,
-        [int]$MaxRetries = 3
+        [int]$MaxRetries = 5
     )
     
     $RetryCount = 0
@@ -35,7 +69,7 @@ function Stop-StubbornService {
             if ($procList -and $procList.State -ne 'Stopped') {
                 $procResults = $procList.StopService()
                 if ($procResults.ReturnValue -eq 0) {
-                    Start-Sleep -Seconds 2
+                    Start-Sleep -Seconds 3
                     $check = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
                     if ($check -and $check.Status -eq 'Stopped') {
                         return $true
@@ -47,7 +81,7 @@ function Stop-StubbornService {
         } catch {
             try {
                 $null = sc.exe stop "$ServiceName" 2>&1
-                Start-Sleep -Seconds 2
+                Start-Sleep -Seconds 3
                 $check = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
                 if ($check -and $check.Status -eq 'Stopped') {
                     return $true
@@ -88,11 +122,51 @@ function Disable-ServiceViaRegistry {
                     Write-RenderStatus "Registry-disabled $ServiceName via $RegPath $ValueName" "Success"
                     Log-DebloatAction "Service-Registry-Disable" "Registry-disabled $ServiceName"
                 } catch {
-                    Write-RenderStatus "Failed registry disable $ServiceName at $RegPath : $_" "Warning"
+                    try {
+                        $null = reg add "$RegPath" /v "$ValueName" /t REG_DWORD /d $ValueData /f 2>&1
+                        Write-RenderStatus "Registry-disabled $ServiceName via REG.EXE $RegPath $ValueName" "Success"
+                        Log-DebloatAction "Service-Registry-Disable" "Registry-disabled $ServiceName via REG.EXE"
+                    } catch {
+                        Write-RenderStatus "Failed registry disable $ServiceName at $RegPath : $_" "Warning"
+                    }
                 }
             }
         }
         return $true
+    }
+    return $false
+}
+
+function Remove-StubScheduledTask {
+    param(
+        [string]$TaskPath,
+        [string]$TaskName
+    )
+    
+    try {
+        $FullTaskPath = "$TaskPath$TaskName"
+        $AltPath = $TaskPath.Trim('\')
+        $AltTaskPath = "\\$AltPath\\"
+        
+        $TaskObj = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
+        if (-not $TaskObj) {
+            $TaskObj = Get-ScheduledTask -TaskPath $AltTaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
+        }
+        if (-not $TaskObj) {
+            $TaskObj = Get-ScheduledTask -TaskPath "\\" -TaskName $TaskName -ErrorAction SilentlyContinue
+        }
+        
+        if ($TaskObj) {
+            $null = Unregister-ScheduledTask -TaskPath $TaskObj.TaskPath -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+            if (-not $?) {
+                $null = schtasks.exe /delete /tn "$FullTaskPath" /f 2>&1
+            }
+            Write-RenderStatus "Removed stub scheduled task: $TaskName" "Success"
+            Log-DebloatAction "ScheduledTask-Remove" "Removed stub task $FullTaskPath"
+            return $true
+        }
+    } catch {
+        Write-RenderStatus "Could not verify/remove stub task $TaskName : $_" "Muted"
     }
     return $false
 }
@@ -116,7 +190,6 @@ function Apply-ServiceAndTaskTweaks {
 
     Write-RenderStatus "Managing Background Services & Scheduled Tasks..." "Header"
 
-    # 1. Disable Services
     if ($Config.services) {
         foreach ($Svc in $Config.services) {
             $SvcName = $Svc.name
@@ -134,7 +207,7 @@ function Apply-ServiceAndTaskTweaks {
                     Write-RenderStatus "Managing service: $SvcName ($DisplayName) -> $Action" "Info"
                     
                     if ($Action -match "Disable|Stop") {
-                        $Stopped = Stop-StubbornService -ServiceName $SvcName -MaxRetries 3
+                        $Stopped = Stop-StubbornService -ServiceName $SvcName -MaxRetries 5
                         if ($Stopped) {
                             Write-RenderStatus "Stopped service: $SvcName" "Success"
                         } else {
@@ -186,7 +259,6 @@ function Apply-ServiceAndTaskTweaks {
         }
     }
 
-    # 2. Disable Telemetry Scheduled Tasks
     if ($Config.scheduled_tasks) {
         foreach ($Task in $Config.scheduled_tasks) {
             $TaskPath = $Task.path
@@ -194,11 +266,17 @@ function Apply-ServiceAndTaskTweaks {
             $FullTaskPath = "$TaskPath$TaskName"
 
             try {
-                $TaskObj = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
+                $TaskObj = $null
+                $PathsToTry = @($TaskPath, "\\$($TaskPath.Trim('\'))\", "\\")
+                foreach ($Path in $PathsToTry) {
+                    $TaskObj = Get-ScheduledTask -TaskPath $Path -TaskName $TaskName -ErrorAction SilentlyContinue
+                    if ($TaskObj) { break }
+                }
+                
                 if ($TaskObj) {
-                    Write-RenderStatus "Disabling scheduled task: $FullTaskPath" "Info"
+                    Write-RenderStatus "Disabling scheduled task: $TaskName ($($TaskObj.State))" "Info"
                     try {
-                        Disable-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction Stop | Out-Null
+                        Disable-ScheduledTask -TaskPath $TaskObj.TaskPath -TaskName $TaskName -ErrorAction Stop | Out-Null
                         Write-RenderStatus "Disabled task: $TaskName" "Success"
                         Log-DebloatAction "ScheduledTask-Disable" "Disabled task $FullTaskPath"
                     } catch {
@@ -210,16 +288,23 @@ function Apply-ServiceAndTaskTweaks {
                             Write-RenderStatus "Could not disable task $TaskName (may require interactive prompt)" "Muted"
                         }
                     }
+                    
+                    try {
+                        $null = Unregister-ScheduledTask -TaskPath $TaskObj.TaskPath -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+                        Write-RenderStatus "Unregistered task stub: $TaskName" "Success"
+                    } catch {}
                 } else {
-                    $FileTask = $TaskName -replace " ", ""
-                    $PathNoSlash = $TaskPath.Trim('\')
-                    $AltFullPath = "$PathNoSlash\$FileTask"
-                    $AltTaskObj = Get-ScheduledTask -TaskPath "\\$PathNoSlash\" -TaskName $TaskName -ErrorAction SilentlyContinue
+                    $AltFullPath = "$($TaskPath.Trim('\'))\$TaskName"
+                    $AltTaskObj = $null
+                    foreach ($Path in $PathsToTry) {
+                        $AltTaskObj = Get-ScheduledTask -TaskPath $Path -TaskName $TaskName -ErrorAction SilentlyContinue
+                        if ($AltTaskObj) { break }
+                    }
                     
                     if ($AltTaskObj) {
                         Write-RenderStatus "Disabling scheduled task (alt path): $AltFullPath" "Info"
                         try {
-                            Disable-ScheduledTask -TaskPath "\\$PathNoSlash\" -TaskName $TaskName -ErrorAction Stop | Out-Null
+                            Disable-ScheduledTask -TaskPath $AltTaskObj.TaskPath -TaskName $TaskName -ErrorAction Stop | Out-Null
                             Write-RenderStatus "Disabled task: $TaskName" "Success"
                             Log-DebloatAction "ScheduledTask-Disable" "Disabled task $AltFullPath"
                         } catch {
@@ -229,7 +314,7 @@ function Apply-ServiceAndTaskTweaks {
                             }
                         }
                     } else {
-                        Write-RenderStatus "Scheduled task not found: $FullTaskPath" "Muted"
+                        Write-RenderStatus "Scheduled task not found (may already be removed): $FullTaskPath" "Muted"
                     }
                 }
             } catch {

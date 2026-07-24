@@ -32,44 +32,100 @@
     "description": "Disable Recall enablement on Copilot+ PCs"
   },
   {
-    "hive": "HKCU",
-    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
-    "name": "BingSearchEnabled",
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "AllowAllUsersAllDeviceAIFeatures",
     "type": "DWord",
     "value": 0,
-    "description": "Disable Bing web search integration in Start Menu"
-  },
-  {
-    "hive": "HKCU",
-    "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
-    "name": "DisableSearchBoxSuggestions",
-    "type": "DWord",
-    "value": 1,
-    "description": "Disable Start Menu web search suggestions"
+    "description": "Disable AI features for all users across all devices"
   },
   {
     "hive": "HKLM",
-    "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
-    "name": "AllowNewsAndInterests",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "DisableGPTForEdge",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable GPT AI integration in Microsoft Edge"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "DisableAISuggestionsInFileExplorer",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable AI-generated search suggestions in File Explorer"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+    "name": "DisableEdgeAICore",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Edge browser AI core features and Copilot sidebar"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+    "name": "AllowCopilot",
     "type": "DWord",
     "value": 0,
-    "description": "Disable Taskbar Widgets feature"
+    "description": "Disable Windows Copilot for current user"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+    "name": "TurnOnWindowsCopilot",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Windows Copilot system-wide"
   },
   {
     "hive": "HKCU",
     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-    "name": "TaskbarDa",
+    "name": "ShowCopilotButton",
     "type": "DWord",
     "value": 0,
-    "description": "Hide Widgets icon from Taskbar"
+    "description": "Hide Copilot taskbar button"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "DITPrevalence",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Click to Do / Design Intelligent Text experience"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Edge",
+    "name": "CopilotEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge Copilot sidebar in browser"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Edge",
+    "name": "DhmaPreference",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge Dynamic Hyperlink Matching and AI telemetry"
   },
   {
     "hive": "HKLM",
-    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
-    "name": "AllowTelemetry",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "UserFeedbackAllowed",
     "type": "DWord",
     "value": 0,
-    "description": "Set Windows Telemetry to Security (Disabled)"
+    "description": "Disable Edge automatic user feedback collection"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "MetricsReportingEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge diagnostic data and metrics reporting"
   },
   {
     "hive": "HKLM",
@@ -86,14 +142,6 @@
     "type": "DWord",
     "value": 0,
     "description": "Disable Edge Discover / Copilot AI button"
-  },
-  {
-    "hive": "HKCU",
-    "path": "Software\\Microsoft\\Input\\TIPC",
-    "name": "Enabled",
-    "type": "DWord",
-    "value": 0,
-    "description": "Disable AI typing insights diagnostic tracking"
   },
   {
     "hive": "HKLM",
@@ -120,12 +168,124 @@
     "description": "Disable Edge background apps and extensions running"
   },
   {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "HardwareAccelerationEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge hardware acceleration"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "EdgeEnhanceImagesEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge AI image enhancement"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+    "name": "UserAgentReduction",
+    "type": "DWord",
+    "value": 1,
+    "description": "Reduce Edge user agent data sent to Microsoft"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "TaskbarDa",
+    "type": "DWord",
+    "value": 0,
+    "description": "Hide Widgets icon from Taskbar"
+  },
+  {
     "hive": "HKCU",
     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
     "name": "TaskbarMn",
     "type": "DWord",
     "value": 0,
     "description": "Disable Taskbar Widgets / News and Interests"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "UseCompactMode",
+    "type": "DWord",
+    "value": 1,
+    "description": "Enable compact taskbar mode"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+    "name": "AllowTelemetry",
+    "type": "DWord",
+    "value": 0,
+    "description": "Set Windows Telemetry to Security (Disabled)"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+    "name": "LimitEnhancedDiagnosticDataWindowsAnalytics",
+    "type": "DWord",
+    "value": 1,
+    "description": "Limit enhanced diagnostic data to Windows Analytics only"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+    "name": "DoNotShowFeedbackNotifications",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable feedback notifications from Windows"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+    "name": "BingSearchEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Bing web search integration in Start Menu"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+    "name": "DisableSearchBoxSuggestions",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Start Menu web search suggestions"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+    "name": "CortanaConsent",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Cortana consent and personalization"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+    "name": "AllowSearchToUseLocation",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable search location tracking"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+    "name": "NoLockScreenCamera",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable camera on lock screen"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+    "name": "NoLockScreenSlideshow",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable lock screen slideshow"
   },
   {
     "hive": "HKCU",
@@ -168,6 +328,46 @@
     "description": "Block suggested apps in Start Menu"
   },
   {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "RotatingLockScreenOverlayEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable rotating lock screen tips"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "name": "RotatingLockScreenEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable rotating lock screen content"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "ExcludeWUDriversInQualityUpdate",
+    "type": "DWord",
+    "value": 0,
+    "description": "Exclude driver updates from Windows quality updates"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "NoAutoUpdate",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable automatic Windows updates (manual only)"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "SetDisablePauseDeferrals",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable pause and deferral of Windows updates"
+  },
+  {
     "hive": "HKLM",
     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
     "name": "AllowGameDVR",
@@ -200,19 +400,315 @@
     "description": "Disable Xbox Game Bar auto Game Mode"
   },
   {
-    "hive": "HKLM",
-    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
-    "name": "ExcludeWUDriversInQualityUpdate",
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\GameBar",
+    "name": "AllowGameBar",
     "type": "DWord",
     "value": 0,
-    "description": "Exclude driver updates from Windows quality updates"
+    "description": "Disable Xbox Game Bar entirely"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\GameBar",
+    "name": "AutoGameModeEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable auto game mode in Game Bar"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Input\\TIPC",
+    "name": "Enabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable AI typing insights diagnostic tracking"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\InkWorkspace",
+    "name": "AllowSuggestedAppsInInkWorkspace",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable suggested apps in Ink Workspace"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\WindowsInkWorkspace",
+    "name": "AllowWindowsInkWorkspace",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Windows Ink Workspace entirely"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\TabletPC",
+    "name": "PreventIcatator",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Input Indicator / Touch Keyboard button on taskbar"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Appx",
+    "name": "DisableAutomaticAppSideloading",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable automatic app sideloading for sideloaded apps"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy",
+    "name": "SpecialGroupPrivacy",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable special group privacy exceptions for Microsoft"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Appx",
+    "name": "AllowAllTrustedApps",
+    "type": "DWord",
+    "value": 0,
+    "description": "Restrict sideloaded app trust"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsInkWorkspace",
+    "name": "AllowSuggestedAppsInInkWorkspace",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block suggested apps in Ink Workspace"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "DisallowShaking",
+    "type": "DWord",
+    "value": 0,
+    "description": "Allow Aero Shake to minimize windows (set to 1 to disable shaking)"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+    "name": "EnableActivityFeed",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Timeline and Activity Feed"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\System",
+    "name": "EnableActivityFeed",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Timeline and Activity Feed for user"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "LaunchTo",
+    "type": "DWord",
+    "value": 1,
+    "description": "Set File Explorer to This PC by default"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "Hidden",
+    "type": "DWord",
+    "value": 1,
+    "description": "Show hidden files, folders, and drives"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "HideFileExt",
+    "type": "DWord",
+    "value": 0,
+    "description": "Show file name extensions"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "ShowSyncProviderNotifications",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable sync provider notifications"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Policies\\Microsoft\\Windows\\EdgeUpdate",
+    "name": "AutoUpdateCheckPeriodMinutes",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge automatic update checks"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\EdgeUpdate",
+    "name": "UpdateDefault",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable Edge default update behavior"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Settings",
+    "name": "AllowSettingsDeviceInstall",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block device installation from Settings app"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Settings",
+    "name": "AllowSettingsEngineeredInstall",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block engine content installation in Settings"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Settings",
+    "name": "AllowSettingsToInstallFromAppSource",
+    "type": "DWord",
+    "value": 0,
+    "description": "Block app installations from Settings / Store"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+    "name": "DisableWindowsConsumerFeatures",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Windows consumer features and suggested apps"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+    "name": "DisableSoftLanding",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Windows feature update soft landing"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "ShowTaskViewButton",
+    "type": "DWord",
+    "value": 0,
+    "description": "Hide Task View button from taskbar"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "ShowCopilotButton",
+    "type": "DWord",
+    "value": 0,
+    "description": "Hide Copilot button from taskbar"
+  },
+  {
+    "hive": "HKCU",
+    "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "name": "TaskbarAl",
+    "type": "DWord",
+    "value": 0,
+    "description": "Hide Chat icon from taskbar"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsErrorReporting",
+    "name": "Disabled",
+    "type": "DWord",
+    "value": 1,
+    "description": "Disable Windows Error Reporting"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "WUServer",
+    "type": "String",
+    "value": "",
+    "description": "Clear WSUS server override if any"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "WUStatusServer",
+    "type": "String",
+    "value": "",
+    "description": "Clear WSUS status server override if any"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "DefaultAadTenantId",
+    "type": "String",
+    "value": "",
+    "description": "Clear default Azure AD tenant for Windows Update"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "ProductVersion",
+    "type": "String",
+    "value": "Windows 10",
+    "description": "Set Windows Update product version to Windows 10 to reduce feature updates"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "TargetReleaseVersion",
+    "type": "DWord",
+    "value": 1,
+    "description": "Enable target release version for Windows Update"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+    "name": "TargetReleaseVersionInfo",
+    "type": "String",
+    "value": "22H2",
+    "description": "Target older Windows 10 release to avoid 24H2 upgrade triggers"
   },
   {
     "hive": "HKLM",
     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
-    "name": "NoAutoUpdate",
+    "name": "UseWUServer",
     "type": "DWord",
     "value": 1,
-    "description": "Disable automatic Windows updates (manual only)"
+    "description": "Force use of WSUS server to bypass Windows Update"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "NoAutoRebootWithLoggedOnUsers",
+    "type": "DWord",
+    "value": 1,
+    "description": "Prevent automatic reboot while users are logged on"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "DetectionFrequencyEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable automatic update detection frequency"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "RebootWarningTimeoutEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable reboot warning countdown"
+  },
+  {
+    "hive": "HKLM",
+    "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+    "name": "RebootRelaunchTimeoutEnabled",
+    "type": "DWord",
+    "value": 0,
+    "description": "Disable reboot relaunch timeout"
   }
 ]
