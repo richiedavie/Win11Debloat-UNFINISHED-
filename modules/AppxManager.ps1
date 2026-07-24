@@ -1,4 +1,3 @@
-# AppxManager.ps1 - UWP / AppX Package Purging Engine (24H2/25H2 Hardened)
 
 $ProtectedSystemPackages = @(
     "MicrosoftWindows.Client.Photon",
