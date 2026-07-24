@@ -17,38 +17,6 @@
       "description": "Disable Recall enablement on Copilot+ PCs"
     },
     {
-      "hive": "HKCU",
-      "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
-      "name": "AllowCopilot",
-      "type": "DWord",
-      "value": 0,
-      "description": "Disable Windows Copilot for current user"
-    },
-    {
-      "hive": "HKLM",
-      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
-      "name": "TurnOnWindowsCopilot",
-      "type": "DWord",
-      "value": 0,
-      "description": "Disable Windows Copilot system-wide"
-    },
-    {
-      "hive": "HKCU",
-      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-      "name": "ShowCopilotButton",
-      "type": "DWord",
-      "value": 0,
-      "description": "Hide Copilot taskbar button"
-    },
-    {
-      "hive": "HKCU",
-      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-      "name": "DITPrevalence",
-      "type": "DWord",
-      "value": 0,
-      "description": "Disable Click to Do / Design Intelligent Text experience"
-    },
-    {
       "hive": "HKLM",
       "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
       "name": "AllowAllUsersAllDeviceAIFeatures",
@@ -82,6 +50,38 @@
     },
     {
       "hive": "HKCU",
+      "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+      "name": "AllowCopilot",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Windows Copilot for current user"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+      "name": "TurnOnWindowsCopilot",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Windows Copilot system-wide"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "ShowCopilotButton",
+      "type": "DWord",
+      "value": 0,
+      "description": "Hide Copilot taskbar button"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "DITPrevalence",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Click to Do / Design Intelligent Text experience"
+    },
+    {
+      "hive": "HKCU",
       "path": "Software\\Policies\\Microsoft\\Edge",
       "name": "CopilotEnabled",
       "type": "DWord",
@@ -94,15 +94,7 @@
       "name": "DhmaPreference",
       "type": "DWord",
       "value": 0,
-      "description": "Disable Edge Dynamic Hyperlink Matching and AITelemetry"
-    },
-    {
-      "hive": "HKCU",
-      "path": "Software\\Policies\\Microsoft\\Edge",
-      "name": "UserDataDefault",
-      "type": "String",
-      "value": "Default",
-      "description": "Ensure Edge uses default clean profile without AI features"
+      "description": "Disable Edge Dynamic Hyperlink Matching and AI telemetry"
     },
     {
       "hive": "HKLM",
@@ -119,6 +111,182 @@
       "type": "DWord",
       "value": 0,
       "description": "Disable Edge diagnostic data and metrics reporting"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+      "name": "BingSearchEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Bing web search integration in Start Menu"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+      "name": "DisableSearchBoxSuggestions",
+      "type": "DWord",
+      "value": 1,
+      "description": "Disable Start Menu web search suggestions"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+      "name": "AllowNewsAndInterests",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Taskbar Widgets feature"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "TaskbarDa",
+      "type": "DWord",
+      "value": 0,
+      "description": "Hide Widgets icon from Taskbar"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "name": "TaskbarMn",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Taskbar Widgets / News and Interests"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+      "name": "AllowTelemetry",
+      "type": "DWord",
+      "value": 0,
+      "description": "Set Windows Telemetry to Security (Disabled)"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\MicrosoftEdge\\Main",
+      "name": "ShowHubsSidebar",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Edge Copilot sidebar"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+      "name": "DiscoverPageEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Edge Discover / Copilot AI button"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+      "name": "StartupBoostEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Edge Startup Boost background processes"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+      "name": "PrelaunchEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Edge prelaunch at Windows startup"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+      "name": "BackgroundModeEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Edge background apps and extensions running"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Input\\TIPC",
+      "name": "Enabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable AI typing insights diagnostic tracking"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+      "name": "ContentDeliveryAllowed",
+      "type": "DWord",
+      "value": 0,
+      "description": "Block Windows Spotlight and suggested content delivery"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+      "name": "SoftLandingEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Block Windows feature update soft landing announcements"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+      "name": "SilentInstalledAppsEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Block Microsoft Store from silently installing suggested apps"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+      "name": "SubscribedContent-338389Enabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Block Windows Spotlight on lock screen"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+      "name": "SubscribedContent-310093Enabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Block suggested apps in Start Menu"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+      "name": "AllowGameDVR",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Xbox Game DVR recording"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+      "name": "AppCaptureEnabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Game DVR app capture"
+    },
+    {
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+      "name": "GameDVR_Enabled",
+      "type": "DWord",
+      "value": 0,
+      "description": "Disable Game DVR for current user"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "name": "ExcludeWUDriversInQualityUpdate",
+      "type": "DWord",
+      "value": 0,
+      "description": "Exclude driver updates from Windows quality updates"
+    },
+    {
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "name": "NoAutoUpdate",
+      "type": "DWord",
+      "value": 1,
+      "description": "Disable automatic Windows updates (manual only)"
     }
   ],
   "services": [
@@ -129,17 +297,12 @@
     },
     {
       "name": "OneDrive",
-      "displayName": "Microsoft OneDrive (Optional AI sync)",
+      "displayName": "Microsoft OneDrive",
       "action": "Disable"
     },
     {
       "name": "EdgeUpdate",
       "displayName": "Microsoft Edge Update Service",
-      "action": "Disable"
-    },
-    {
-      "name": "LexmarkService",
-      "displayName": "Lexmark Service (if present)",
       "action": "Disable"
     },
     {
@@ -161,6 +324,56 @@
       "name": "XboxNetApiSvc",
       "displayName": "Xbox Live Networking Service",
       "action": "Disable"
+    },
+    {
+      "name": "WSearch",
+      "displayName": "Windows Search Indexer",
+      "action": "Disable"
+    },
+    {
+      "name": "SysMain",
+      "displayName": "SysMain / Superfetch",
+      "action": "Disable"
+    },
+    {
+      "name": "WerSvc",
+      "displayName": "Windows Error Reporting Service",
+      "action": "Disable"
+    },
+    {
+      "name": "DiagTrack",
+      "displayName": "Connected User Experiences and Telemetry",
+      "action": "Disable"
+    },
+    {
+      "name": "dmwappushservice",
+      "displayName": "Device Management Wireless Application Protocol Push message Routing Service",
+      "action": "Disable"
+    },
+    {
+      "name": "Fax",
+      "displayName": "Fax",
+      "action": "Disable"
+    },
+    {
+      "name": "retimgquery",
+      "displayName": "Remote Image Query",
+      "action": "Disable"
+    },
+    {
+      "name": "MapsBroker",
+      "displayName": "Windows Maps Manager",
+      "action": "Disable"
+    },
+    {
+      "name": "PhoneSvc",
+      "displayName": "Phone Service",
+      "action": "Disable"
+    },
+    {
+      "name": "wisvc",
+      "displayName": "Windows Insider Service",
+      "action": "Disable"
     }
   ],
   "appx_packages": [
@@ -168,32 +381,40 @@
     "Microsoft.Windows.AI.Copilot",
     "Microsoft.Windows.PinToAI",
     "Clipchamp.Clipchamp",
-    "Microsoft.Windows.Photos",
-    "Microsoft.Paint",
-    "Microsoft.PrintExperienceHost",
-    "Microsoft.SecureAssessmentPlatform",
-    "Microsoft.Windows.SecureAssessmentBrowser",
-    "Microsoft.Windows.Widgets",
     "MicrosoftTeams",
     "Microsoft.Office.OneNote",
     "Microsoft.Office.Omnibooks",
     "Microsoft.Office.OfficeHub",
+    "Microsoft.Office.Sway",
+    "Microsoft.MicrosoftSolitaireCollection",
+    "Microsoft.Microsoft3DViewer",
+    "Microsoft.MicrosoftEdge.ShadowCrust",
+    "Microsoft.MicrosoftEdgeDevToolsClient",
     "Microsoft.XboxApp",
     "Microsoft.XboxIdentityProvider",
     "Microsoft.XboxSpeechToTextOverlay",
+    "Microsoft.XboxGameOverlay",
+    "Microsoft.XboxGamingOverlay",
     "Microsoft.ZuneVideo",
     "Microsoft.ZuneMusic",
     "Microsoft.BingNews",
     "Microsoft.BingWeather",
+    "Microsoft.BingFoodAndDrink",
+    "Microsoft.BingHealthAndFitness",
+    "Microsoft.BingSports",
+    "Microsoft.BingFinance",
+    "Microsoft.BingTravel",
     "Microsoft.GetHelp",
     "Microsoft.Getstarted",
     "Microsoft.WindowsFeedbackHub",
     "Microsoft.WindowsMaps",
-    "Microsoft.Windows.PeopleExperienceHost",
     "Microsoft.SkypeApp",
     "Microsoft.Todos",
     "Microsoft.YourPhone",
-    "Microsoft.PowerAutomateDesktop"
+    "Microsoft.PowerAutomateDesktop",
+    "Microsoft.MicrosoftOfficeHub",
+    "Microsoft.Print3D",
+    "Microsoft.ZuneMusic"
   ],
   "edge_extensions": [
     "aeblfdkhhhdcdjpifbpbbaagphkhhocb",
