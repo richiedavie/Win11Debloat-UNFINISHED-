@@ -1,8 +1,8 @@
 # ServiceManager.ps1 - Disables Background Telemetry Services and Scheduled Tasks (24H2/25H2 Hardened)
 
 $RegistryDisableMap = @{
-    "DiagTrack" = @{
-        "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" = @{ "Start" = 4 }
+    "SysMain" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 3 }
     }
     "dmwappushservice" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" = @{ "Start" = 4 }
@@ -54,6 +54,29 @@ $RegistryDisableMap = @{
     "WbioSrvc" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\WbioSrvc" = @{ "Start" = 4 }
     }
+}
+
+function Get-ServiceSafe {
+    param([string]$ServiceName)
+    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if (-not $svc) {
+        $svc = Get-CimInstance -ClassName Win32_Service -Filter "Name='$ServiceName'" -ErrorAction SilentlyContinue
+    }
+    return $svc
+}
+
+function Test-ServiceHasCriticalDependency {
+    param([string]$ServiceName)
+    $CriticalDeps = @("RpcSs","DcomLaunch","SamSs","EventLog","WinDefend","WdNisSvc","WSearch")
+    try {
+        $deps = Get-CimInstance -ClassName Win32_Service -Filter "Name='$ServiceName'" -ErrorAction Stop | Select-Object -ExpandProperty DependsOn -ErrorAction SilentlyContinue
+        if ($deps) {
+            foreach ($dep in $deps) {
+                if ($CriticalDeps -contains $dep) { return $true }
+            }
+        }
+    } catch {}
+    return $false
 }
 
 function Stop-StubbornService {
@@ -197,13 +220,18 @@ function Apply-ServiceAndTaskTweaks {
             if ($Svc.displayName) { $DisplayName = $Svc.displayName }
             $Action = $Svc.action
 
-            $ServiceObj = Get-Service -Name $SvcName -ErrorAction SilentlyContinue
+            $ServiceObj = Get-ServiceSafe -ServiceName $SvcName
             if (-not $ServiceObj) {
-                $ServiceObj = Get-CimInstance -ClassName Win32_Service -Filter "Name='$SvcName'" -ErrorAction SilentlyContinue
+                Write-RenderStatus "Service not present on system: $SvcName" "Muted"
+                continue
             }
-
-            if ($ServiceObj) {
                 try {
+                    if ($Action -match "Disable" -and (Test-ServiceHasCriticalDependency -ServiceName $SvcName)) {
+                        Write-RenderStatus "Skipping $SvcName - has critical OS dependencies" "Warning"
+                        Log-DebloatAction "Service-Disable" "SKIPPED (critical dependency): $SvcName"
+                        continue
+                    }
+                    
                     Write-RenderStatus "Managing service: $SvcName ($DisplayName) -> $Action" "Info"
                     
                     if ($Action -match "Disable|Stop") {
@@ -217,17 +245,28 @@ function Apply-ServiceAndTaskTweaks {
                     
                     if ($Action -match "Disable") {
                         try {
-                            Set-Service -Name $SvcName -StartupType Disabled -ErrorAction Stop | Out-Null
-                            Write-RenderStatus "Disabled service: $SvcName" "Success"
-                            Log-DebloatAction "Service-Disable" "Disabled service $SvcName"
-                        } catch {
-                            $RegDisabled = Disable-ServiceViaRegistry -ServiceName $SvcName
-                            if (-not $RegDisabled) {
-                                try {
+                            if ($Action -match "Delay") {
+                                Set-Service -Name $SvcName -StartupType Automatic -ErrorAction Stop
+                                Write-RenderStatus "Set service to Automatic (Delayed): $SvcName" "Success"
+                                Log-DebloatAction "Service-Disable" "Set delayed start $SvcName"
+                            } else {
+                                Set-Service -Name $SvcName -StartupType Disabled -ErrorAction Stop | Out-Null
+                                Write-RenderStatus "Disabled service: $SvcName" "Success"
+                                Log-DebloatAction "Service-Disable" "Disabled service $SvcName"
+                            }
+                    } catch {
+                        $RegDisabled = Disable-ServiceViaRegistry -ServiceName $SvcName
+                        if (-not $RegDisabled) {
+                            try {
+                                if ($Action -match "Delay") {
+                                    $null = sc.exe config "$SvcName" start= delayed-auto 2>&1
+                                    Write-RenderStatus "Set service to Delayed-Auto via SC.EXE: $SvcName" "Success"
+                                } else {
                                     $null = sc.exe config "$SvcName" start= disabled 2>&1
                                     Write-RenderStatus "Disabled service via SC.EXE: $SvcName" "Success"
-                                    Log-DebloatAction "Service-Disable" "Disabled service via SC.EXE $SvcName"
-                                } catch {
+                                }
+                                Log-DebloatAction "Service-Disable" "Disabled service via SC.EXE $SvcName"
+                            } catch {
                                     Write-RenderStatus "Failed to disable service $($SvcName): $_" "Warning"
                                     Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
                                 }

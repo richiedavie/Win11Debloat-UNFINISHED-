@@ -42,9 +42,25 @@ if (-not [Environment]::Is64BitProcess) {
     }
 }
 
-# 5. Module files list
+# 5. Validate JSON configuration files
+$JsonConfigs = @(
+    (Join-Path $ConfigDir "bloatware_apps.json"),
+    (Join-Path $ConfigDir "registry_tweaks.json"),
+    (Join-Path $ConfigDir "services_list.json"),
+    (Join-Path $ConfigDir "ai_components.json")
+)
+foreach ($JsonCfg in $JsonConfigs) {
+    if (Test-Path $JsonCfg) {
+        try {
+            $_ = Get-Content -Path $JsonCfg -Raw | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            Write-Host "[!] WARNING: Invalid JSON in $JsonCfg : $_" -ForegroundColor Yellow
+        }
+    }
+}
+
+# 6. Module files list
 $ModuleFiles = @(
-    (Join-Path $UiDir "Rendering.ps1"),
     (Join-Path $UiDir "Menu.ps1"),
     (Join-Path $ModulesDir "VersionGuard.ps1"),
     (Join-Path $ModulesDir "SafetyManager.ps1"),
@@ -63,14 +79,14 @@ foreach ($ModulePath in $ModuleFiles) {
     }
 }
 
-# 6. Ensure Administrator privileges
+# 7. Ensure Administrator privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Error: Administrator privileges are required to run Windows 11 Debloater." -ForegroundColor Red
     Write-Host "[!] Please run 'Run.bat' as Administrator." -ForegroundColor Red
     Exit
 }
 
-# 7. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
+# 8. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
 $TargetBuild = 26100
 if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Write-Host "[!] Unsupported OS build detected. Exiting." -ForegroundColor Red
@@ -78,7 +94,7 @@ if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Exit 1
 }
 
-# 8. Create default restore point at startup (unless suppressed)
+# 9. Create default restore point at startup (unless suppressed)
 if (-not $NoRestorePoint -and -not $DryRun) {
     $rpResult = Create-Win11RestorePoint -Description "Win11Debloat Pre-Flight Restore Point"
     if (-not $rpResult) {
@@ -90,7 +106,7 @@ if (-not $NoRestorePoint -and -not $DryRun) {
     }
 }
 
-# 9. Preset resolution helper
+# 10. Preset resolution helper
 function Resolve-PresetConfigs {
     param([string]$PresetFile)
 

@@ -27,8 +27,8 @@
     },
     {
       "name": "WSearch",
-      "displayName": "Windows Search Indexer",
-      "action": "Disable"
+      "displayName": "Windows Search Indexer (Delayed Start)",
+      "action": "DelayStart"
     },
     {
       "name": "BthAvctpSvc",

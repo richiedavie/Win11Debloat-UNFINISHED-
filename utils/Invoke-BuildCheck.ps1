@@ -38,10 +38,21 @@ function Test-DebloatPrerequisites {
         $Results.git = $false
     }
 
+    $Results.cim_available = $false
+
     if ($Results.os -ne "Windows") {
         $Results.issues += "Not running on Windows. Script will run in Dry-Run simulation mode."
+    } elseif ($Results.build -lt 22000) {
+        $Results.issues += "Build $($Results.build) detected. This tool requires Build 22000+ (Windows 11)."
     } elseif ($Results.build -lt 26100) {
-        $Results.issues += "Build $($Results.build) detected. This tool requires Build 26100+ (24H2/25H2)."
+        $Results.warnings += "Build $($Results.build) detected. This tool is optimized for Build 26100+ (24H2/25H2)."
+    }
+
+    if ($IsWindows -and (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)) {
+        try {
+            $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
+            if ($osInfo) { $Results.cim_available = $true }
+        } catch { $Results.cim_available = $false }
     }
 
     if (-not $Results.admin -and $Results.os -eq "Windows") {

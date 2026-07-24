@@ -17,6 +17,26 @@ function Write-RenderStatus {
 
     $Timestamp = Get-Date -Format "HH:mm:ss"
 
+    if ($IsLinux -or $IsMacOS) {
+        switch ($Type) {
+            "Header" { Write-Host "`n[+] $Message" -ForegroundColor Cyan }
+            "Success" { Write-Host " [$Timestamp] [OK] $Message" -ForegroundColor Green }
+            "Info" { Write-Host " [$Timestamp] [INFO] $Message" -ForegroundColor Gray }
+            "Warning" { Write-Host " [$Timestamp] [WARN] $Message" -ForegroundColor Yellow }
+            "Error" { Write-Host " [$Timestamp] [ERROR] $Message" -ForegroundColor Red }
+            "Muted" { Write-Host " [$Timestamp] [SKIP] $Message" -ForegroundColor DarkGray }
+            Default { Write-Host " [$Timestamp] $Message" }
+        }
+        return
+    }
+
+    try {
+        $console = $Host.UI.RawUI
+        if ($console -and $console.WindowSize) {
+            $codePage = (Get-ConsoleUICodePage)
+        }
+    } catch {}
+
     switch ($Type) {
         "Header" {
             Write-Host "`n[+] $Message" -ForegroundColor Cyan
