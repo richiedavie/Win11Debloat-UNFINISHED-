@@ -1,5 +1,15 @@
 # RollbackEngine.ps1 - Undo Engine Using State Delta Manifests
 
+function New-AtomicJsonFile {
+    param (
+        [string]$Path,
+        [object]$Data
+    )
+    $TempPath = "${Path}.tmp"
+    $Data | ConvertTo-Json -Depth 10 | Set-Content -Path $TempPath -Encoding UTF8 -ErrorAction Stop
+    Move-Item -Path $TempPath -Destination $Path -Force -ErrorAction Stop
+}
+
 function New-SystemStateManifest {
     param (
         [string]$OutputPath = "",
@@ -98,7 +108,7 @@ function New-SystemStateManifest {
         New-Item -ItemType Directory -Path $Dir -Force | Out-Null
     }
 
-    $Manifest | ConvertTo-Json -Depth 10 | Set-Content -Path $OutputPath -Encoding UTF8
+    New-AtomicJsonFile -Path $OutputPath -Data $Manifest
     Write-RenderStatus "System state manifest saved to: $OutputPath" "Success"
     Log-DebloatAction "State-Manifest" "Saved state snapshot to $OutputPath"
 }

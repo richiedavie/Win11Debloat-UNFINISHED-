@@ -12,6 +12,7 @@ function Test-DebloatPrerequisites {
         git = $false
         powershell_version = $PSVersionTable.PSVersion.ToString()
         issues = @()
+        warnings = @()
     }
 
     if ($IsWindows) {
@@ -47,6 +48,18 @@ function Test-DebloatPrerequisites {
         $Results.issues += "Not running as Administrator. Many operations will fail without elevated privileges."
     }
 
+    $DuplicateServices = @(
+        "DiagTrack", "dmwappushservice", "WSearch", "WerSvc", "EdgeUpdate"
+    )
+    $seenServices = @{}
+    foreach ($Svc in $DuplicateServices) {
+        if ($seenServices.ContainsKey($Svc)) {
+            $Results.warnings += "Duplicate service entry detected: $Svc"
+        } else {
+            $seenServices[$Svc] = $true
+        }
+    }
+
     if (-not $Silent) {
         Write-Host "`n=== Win11Debloat Build Check ===" -ForegroundColor Cyan
         Write-Host "OS            : $($Results.os)"
@@ -55,6 +68,13 @@ function Test-DebloatPrerequisites {
         Write-Host "Git Available : $($Results.git)"
         Write-Host "PowerShell    : $($Results.powershell_version)"
         Write-Host "===============================" -ForegroundColor Cyan
+
+        if ($Results.warnings.Count -gt 0) {
+            Write-Host "`nWarnings:" -ForegroundColor DarkYellow
+            foreach ($Warning in $Results.warnings) {
+                Write-Host "  - $Warning" -ForegroundColor DarkYellow
+            }
+        }
 
         if ($Results.issues.Count -gt 0) {
             Write-Host "`nIssues Detected:" -ForegroundColor Yellow

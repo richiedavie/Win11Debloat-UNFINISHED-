@@ -47,7 +47,7 @@ function Log-DebloatAction {
         [string]$Category,
         [string]$Details
     )
-    
+     
     $LogDir = ""
     if ($global:RootDir) {
         $LogDir = Join-Path $global:RootDir "logs"
@@ -58,9 +58,21 @@ function Log-DebloatAction {
     if (-not (Test-Path $LogDir)) {
         New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
     }
-    
+     
     $LogFile = Join-Path $LogDir "debloat_history.log"
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $Entry = "[$Timestamp] [$Category] $Details"
-    Add-Content -Path $LogFile -Value $Entry -ErrorAction SilentlyContinue
+    
+    $MutexName = "Win11DebloatLogMutex"
+    $Mutex = New-Object System.Threading.Mutex($false, $MutexName)
+    try {
+        $Mutex.WaitOne() | Out-Null
+        try {
+            [System.IO.File]::AppendAllText($LogFile, $Entry + [Environment]::NewLine)
+        } finally {
+            $Mutex.ReleaseMutex()
+        }
+    } finally {
+        $Mutex.Dispose()
+    }
 }

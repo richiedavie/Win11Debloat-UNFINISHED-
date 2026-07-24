@@ -18,7 +18,25 @@ $BackupDir = Join-Path $RootDir "logs\registry_backups"
 $ManifestPath = Join-Path $RootDir "logs\state_manifest_latest.json"
 $PresetsDir = Join-Path $RootDir "presets"
 
-# 3. Module files list
+# 3. Enable long path support
+try {
+    $lpKey = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"
+    if ((Get-ItemProperty -Path $lpKey -Name "LongPathsEnabled" -ErrorAction SilentlyContinue).LongPathsEnabled -ne 1) {
+        Set-ItemProperty -Path $lpKey -Name "LongPathsEnabled" -Value 1 -Type DWord -Force -ErrorAction Stop | Out-Null
+    }
+} catch {}
+
+# 4. Enforce 64-bit PowerShell process (Sysnative re-launch if 32-bit)
+if (-not [Environment]::Is64BitProcess) {
+    $sysNativePs = "$env:SystemRoot\SysNative\WindowsPowerShell\v1.0\powershell.exe"
+    if (Test-Path $sysNativePs) {
+        Write-Host "[!] Relaunching from 64-bit PowerShell host (SysNative)..." -ForegroundColor Yellow
+        Start-Process -FilePath $sysNativePs -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $MyInvocation.MyCommand.Path, @($args)) -Verb RunAs
+        exit
+    }
+}
+
+# 5. Module files list
 $ModuleFiles = @(
     (Join-Path $UiDir "Rendering.ps1"),
     (Join-Path $UiDir "Menu.ps1"),
@@ -39,25 +57,40 @@ foreach ($ModulePath in $ModuleFiles) {
     }
 }
 
-# 4. Ensure Administrator privileges
+# 6. Parse command line parameters for silent/automation mode
+param(
+    [switch]$Silent = $false,
+    [string]$Preset = "",
+    [switch]$NoRestorePoint = $false
+)
+
+# 7. Ensure Administrator privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Error: Administrator privileges are required to run Windows 11 Debloater." -ForegroundColor Red
     Write-Host "[!] Please run 'Run.bat' as Administrator." -ForegroundColor Red
     Exit
 }
 
-# 5. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
+# 8. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
 $TargetBuild = 26100
 if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Write-Host "[!] Unsupported OS build detected. Exiting." -ForegroundColor Red
-    Read-Host "`nPress Enter to exit..."
+    if (-not $Silent) { Read-Host "`nPress Enter to exit..." }
     Exit 1
 }
 
-# 6. Create default restore point at startup
-$null = Create-Win11RestorePoint -Description "Win11Debloat Pre-Flight Restore Point"
+# 9. Create default restore point at startup (unless suppressed)
+if (-not $NoRestorePoint -and -not $DryRun) {
+    $rpResult = Create-Win11RestorePoint -Description "Win11Debloat Pre-Flight Restore Point"
+    if (-not $rpResult) {
+        Write-RenderStatus "CRITICAL: System Restore Point creation failed. Debloater will halt for safety." "Error"
+        Log-DebloatAction "Safety-Halt" "System Restore Point creation failed. Aborting debloat execution."
+        if (-not $Silent) { Read-Host "`nPress Enter to exit..." }
+        Exit 1
+    }
+}
 
-# 7. Preset resolution helper
+# 10. Preset resolution helper
 function Resolve-PresetConfigs {
     param([string]$PresetFile)
 
@@ -100,7 +133,26 @@ function Resolve-PresetConfigs {
     return $ConfigMap
 }
 
-# 8. Capture initial system state manifest
+function Merge-PresetDeep {
+    param(
+        [hashtable]$Base,
+        [hashtable]$Override
+    )
+    $Result = @{}
+    foreach ($Key in $Base.Keys) {
+        $Result[$Key] = $Base[$Key]
+    }
+    foreach ($Key in $Override.Keys) {
+        if ($Override[$Key] -is [hashtable] -and $Result.ContainsKey($Key) -and $Result[$Key] -is [hashtable]) {
+            $Result[$Key] = Merge-PresetDeep -Base $Result[$Key] -Override $Override[$Key]
+        } else {
+            $Result[$Key] = $Override[$Key]
+        }
+    }
+    return $Result
+}
+
+# 11. Capture initial system state manifest
 try {
     $RegistryPaths = @(
         "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot",
@@ -128,66 +180,114 @@ try {
     Write-RenderStatus "Could not generate initial state manifest: $_" "Warning"
 }
 
-# 9. Initial Preset Selection
-$SelectedPreset = Join-Path $PresetsDir "default_debloat.json"
-$PresetLoaded = $false
-
-Write-Host "`nAvailable Presets:" -ForegroundColor Cyan
-$PresetIndex = 1
-$PresetList = @()
-
-if (Test-Path $PresetsDir) {
-    $PresetFiles = Get-ChildItem -Path $PresetsDir -Filter "*.json" | Sort-Object Name
-    foreach ($Pf in $PresetFiles) {
-        try {
-            $P = Get-Content -Path $Pf.FullName -Raw | ConvertFrom-Json
-            Write-Host "  [$PresetIndex] $($P.name) - $($P.description)" -ForegroundColor White
-            $PresetList += $Pf.FullName
-            $PresetIndex++
-        } catch {
-            Write-Host "  [$PresetIndex] $($Pf.Name) (invalid JSON)" -ForegroundColor DarkGray
-            $PresetList += $Pf.FullName
-            $PresetIndex++
+# 12. Initial Preset Selection (skipped in silent mode)
+if ($Silent) {
+    $SelectedPreset = "manual"
+    $PresetLoaded = $false
+    if ($Preset) {
+        $PresetPath = Join-Path $PresetsDir "$Preset.json"
+        if (Test-Path $PresetPath) {
+            $SelectedPreset = $PresetPath
+            $PresetLoaded = $true
+        } else {
+            Write-Host "[!] Preset file not found: $PresetPath" -ForegroundColor Red
+            Exit 1
         }
     }
-}
+} else {
+    $SelectedPreset = Join-Path $PresetsDir "default_debloat.json"
+    $PresetLoaded = $false
 
-Write-Host "  [$PresetIndex] Deep Debloat (all modules aggressive)" -ForegroundColor Yellow
-$PresetList += "deep"
-$PresetIndex++
+    Write-Host "`nAvailable Presets:" -ForegroundColor Cyan
+    $PresetIndex = 1
+    $PresetList = @()
 
-Write-Host "  [$PresetIndex] Skip preset (manual selection)" -ForegroundColor DarkGray
-$PresetList += "manual"
-
-do {
-    $PresetChoice = Read-Host -Prompt "`nSelect preset [1-$PresetIndex] (default: 1)"
-    if (-not $PresetChoice) { $PresetChoice = "1" }
-
-    $Idx = [int]$PresetChoice
-    if ($Idx -ge 1 -and $Idx -le $PresetList.Count) {
-        $SelectedPreset = $PresetList[$Idx - 1]
-        $PresetLoaded = $true
-        break
+    if (Test-Path $PresetsDir) {
+        $PresetFiles = Get-ChildItem -Path $PresetsDir -Filter "*.json" | Sort-Object Name
+        foreach ($Pf in $PresetFiles) {
+            try {
+                $P = Get-Content -Path $Pf.FullName -Raw | ConvertFrom-Json
+                Write-Host "  [$PresetIndex] $($P.name) - $($P.description)" -ForegroundColor White
+                $PresetList += $Pf.FullName
+                $PresetIndex++
+            } catch {
+                Write-Host "  [$PresetIndex] $($Pf.Name) (invalid JSON)" -ForegroundColor DarkGray
+                $PresetList += $Pf.FullName
+                $PresetIndex++
+            }
+        }
     }
 
-    Write-Host "Invalid preset selection." -ForegroundColor Red
-} while ($true)
+    Write-Host "  [$PresetIndex] Deep Debloat (all modules aggressive)" -ForegroundColor Yellow
+    $PresetList += "deep"
+    $PresetIndex++
 
-if ($SelectedPreset -eq "manual") {
-    Write-Host "`nManual mode selected. You will choose individual operations from the menu." -ForegroundColor Yellow
-} elseif ($SelectedPreset -eq "deep") {
-    Write-Host "`nDeep Debloat selected. All modules will run aggressively." -ForegroundColor Yellow
-    $PresetLoaded = $true
-} else {
-    Write-RenderStatus "Preset loaded: $SelectedPreset" "Success"
+    Write-Host "  [$PresetIndex] Skip preset (manual selection)" -ForegroundColor DarkGray
+    $PresetList += "manual"
+
+    do {
+        $PresetChoice = Read-Host -Prompt "`nSelect preset [1-$PresetIndex] (default: 1)"
+        if (-not $PresetChoice) { $PresetChoice = "1" }
+
+        $Idx = [int]$PresetChoice
+        if ($Idx -ge 1 -and $Idx -le $PresetList.Count) {
+            $SelectedPreset = $PresetList[$Idx - 1]
+            $PresetLoaded = $true
+            break
+        }
+
+        Write-Host "Invalid preset selection." -ForegroundColor Red
+    } while ($true)
+
+    if ($SelectedPreset -eq "manual") {
+        Write-Host "`nManual mode selected. You will choose individual operations from the menu." -ForegroundColor Yellow
+    } elseif ($SelectedPreset -eq "deep") {
+        Write-Host "`nDeep Debloat selected. All modules will run aggressively." -ForegroundColor Yellow
+        $PresetLoaded = $true
+    } else {
+        Write-RenderStatus "Preset loaded: $SelectedPreset" "Success"
+    }
 }
 
+# 13. Resolve preset configurations
 $PresetConfigs = @{}
 if ($SelectedPreset -ne "deep" -and $SelectedPreset -ne "manual") {
     $PresetConfigs = Resolve-PresetConfigs -PresetFile $SelectedPreset
 }
 
-# 10. Main Menu Execution Loop
+# 14. Main Menu Execution Loop (or silent execution)
+if ($Silent) {
+    Write-RenderStatus "Running in SILENT mode. No interactive prompts." "Info"
+    
+    if ($PresetConfigs.flags.ai -or $SelectedPreset -eq "deep") {
+        Write-RenderStatus "Running AI Component Neutralization..." "Info"
+        $AiCfg = Join-Path $ConfigDir "ai_components.json"
+        if ($PresetConfigs.ai) { $AiCfg = $PresetConfigs.ai }
+        Invoke-AiComponentNeutralization -ConfigPath $AiCfg
+    }
+
+    if ($PresetConfigs.flags.appx -or $SelectedPreset -eq "deep") {
+        $AppxCfg = Join-Path $ConfigDir "bloatware_apps.json"
+        if ($PresetConfigs.bloatware) { $AppxCfg = $PresetConfigs.bloatware }
+        Remove-DebloatAppxPackages -ConfigPath $AppxCfg
+    }
+
+    if ($PresetConfigs.flags.registry -or $SelectedPreset -eq "deep") {
+        $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
+        if ($PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
+        Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
+    }
+
+    if ($PresetConfigs.flags.services -or $SelectedPreset -eq "deep") {
+        $SvcCfg = Join-Path $ConfigDir "services_list.json"
+        if ($PresetConfigs.services) { $SvcCfg = $PresetConfigs.services }
+        Apply-ServiceAndTaskTweaks -ConfigPath $SvcCfg
+    }
+
+    Write-RenderStatus "Silent debloat sequence finished." "Success"
+    exit 0
+}
+
 do {
     $Choice = Show-DebloatMenu -PresetLoaded ($SelectedPreset -ne "manual")
 

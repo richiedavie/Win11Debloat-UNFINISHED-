@@ -132,6 +132,16 @@ function Create-Win11RestorePoint {
 }
 
 
+function New-AtomicJsonFile {
+    param (
+        [string]$Path,
+        [object]$Data
+    )
+    $TempPath = "${Path}.tmp"
+    $Data | ConvertTo-Json -Depth 10 | Set-Content -Path $TempPath -Encoding UTF8 -ErrorAction Stop
+    Move-Item -Path $TempPath -Destination $Path -Force -ErrorAction Stop
+}
+
 function Backup-RegistryKey {
     param (
         [string]$Hive,
@@ -153,5 +163,29 @@ function Backup-RegistryKey {
     }
     catch {
         Log-DebloatAction "Backup-RegistryKey" "Key $Hive\$Path did not exist or failed to backup."
+    }
+}
+
+function Set-TrustedInstallerRegistryAcl {
+    param (
+        [string]$Path
+    )
+    try {
+        $acl = Get-Acl -Path $Path -ErrorAction Stop
+        $rule = New-Object System.Security.AccessControl.RegistryAccess_rule(
+            [Security.Principal.SecurityIdentifier]::new("S-1-5-80-956008885-3418522649-1831038044-1853292631-227147846"),
+            "FullControl",
+            "Allow"
+        )
+        $acl.SetAccessRule($rule)
+        Set-Acl -Path $Path -AclObject $acl -ErrorAction Stop
+        return $true
+    } catch {
+        try {
+            $null = icacls $Path /grant "NT SERVICE\TrustedInstaller:(OI)(CI)F" /T 2>&1
+            return $true
+        } catch {
+            return $false
+        }
     }
 }

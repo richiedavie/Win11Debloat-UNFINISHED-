@@ -1,4 +1,52 @@
-# RegistryManager.ps1 - Writes Registry Policies to HKLM / HKCU
+function Get-ActiveUserSid {
+    try {
+        $userProfile = Get-CimInstance -ClassName Win32_UserProfile -Filter "Special=False AND Loaded=True" -ErrorAction Stop | Select-Object -First 1
+        if ($userProfile) {
+            $sid = ($userProfile.SID).Value
+            return $sid
+        }
+    } catch {}
+    try {
+        $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+        return $currentUser.User.Value
+    } catch {}
+    return $null
+}
+
+function Get-UserHiveFromSid {
+    param([string]$Sid)
+    if (-not $Sid) { return $null }
+    $ntuserDat = "C:\Users\$((Get-CimInstance -ClassName Win32_UserAccount -Filter "SID='$Sid'" -ErrorAction SilentlyContinue).Name)\NTUSER.DAT"
+    if (Test-Path $ntuserDat) {
+        return $ntuserDat
+    }
+    return $null
+}
+
+function Set-TrustedInstallerRegistryAcl {
+    param (
+        [string]$Path
+    )
+    try {
+        $acl = Get-Acl -Path $Path -ErrorAction Stop
+        $sid = [Security.Principal.SecurityIdentifier]::new("S-1-5-80-956008885-3418522649-1831038044-1853292631-227147846")
+        $rule = New-Object System.Security.AccessControl.RegistryAccessRule(
+            $sid,
+            "FullControl",
+            "Allow"
+        )
+        $acl.SetAccessRule($rule)
+        Set-Acl -Path $Path -AclObject $acl -ErrorAction Stop
+        return $true
+    } catch {
+        try {
+            $null = icacls $Path /grant "NT SERVICE\TrustedInstaller:(OI)(CI)F" /T 2>&1
+            return $true
+        } catch {
+            return $false
+        }
+    }
+}
 
 function Apply-RegistryTweaks {
     param (
@@ -31,7 +79,6 @@ function Apply-RegistryTweaks {
         
         $Description = $Tweak.description
 
-        # Backup key before modification
         Backup-RegistryKey -Hive $Hive -Path $Path -BackupDir $BackupDir
 
         $PsDrivePath = "${Hive}:\$Path"
@@ -39,6 +86,11 @@ function Apply-RegistryTweaks {
         try {
             if (-not (Test-Path -Path $PsDrivePath)) {
                 New-Item -Path $PsDrivePath -Force | Out-Null
+            }
+
+            $aclTaken = Set-TrustedInstallerRegistryAcl -Path $PsDrivePath
+            if (-not $aclTaken) {
+                Write-RenderStatus "Warning: Could not take ownership of $PsDrivePath" "Warning"
             }
 
             if (Get-ItemProperty -Path $PsDrivePath -Name $Name -ErrorAction SilentlyContinue) {
@@ -51,7 +103,6 @@ function Apply-RegistryTweaks {
             Log-DebloatAction "Registry-Tweak" "Applied [${Hive}\$Path] $Name = $Value"
         }
         catch {
-            # Fallback to reg.exe add if PowerShell provider encounters permission/type issues
             try {
                 $RegHive = "HKCU"
                 if ($Hive -eq "HKLM") { $RegHive = "HKLM" }

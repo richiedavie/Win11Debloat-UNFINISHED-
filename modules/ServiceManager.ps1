@@ -8,7 +8,7 @@ $RegistryDisableMap = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" = @{ "Start" = 4 }
     }
     "WSearch" = @{
-        "HKLM\SYSTEM\CurrentControlSet\Services\WSearch" = @{ "Start" = 4 }
+        "HKLM\SYSTEM\CurrentControlSet\Services\WSearch" = @{ "Start" = 2 }
     }
     "SysMain" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 4 }
@@ -65,7 +65,7 @@ function Stop-StubbornService {
     $RetryCount = 0
     while ($RetryCount -lt $MaxRetries) {
         try {
-            $procList = Get-WmiObject Win32_Service -Filter "Name='$ServiceName'" -ErrorAction Stop
+            $procList = Get-CimInstance -ClassName Win32_Service -Filter "Name='$ServiceName'" -ErrorAction Stop
             if ($procList -and $procList.State -ne 'Stopped') {
                 $procResults = $procList.StopService()
                 if ($procResults.ReturnValue -eq 0) {
@@ -199,7 +199,7 @@ function Apply-ServiceAndTaskTweaks {
 
             $ServiceObj = Get-Service -Name $SvcName -ErrorAction SilentlyContinue
             if (-not $ServiceObj) {
-                $ServiceObj = Get-WmiObject Win32_Service -Filter "Name='$SvcName'" -ErrorAction SilentlyContinue
+                $ServiceObj = Get-CimInstance -ClassName Win32_Service -Filter "Name='$SvcName'" -ErrorAction SilentlyContinue
             }
 
             if ($ServiceObj) {

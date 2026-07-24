@@ -220,5 +220,31 @@ function Invoke-AiComponentNeutralization {
         }
     }
 
+if ($Config.post_wu_guard) {
+        Write-RenderStatus "Setting up post-Windows Update AI policy re-application guard..." "Info"
+        try {
+            $guardTaskName = "Win11Debloat_AIPolicyReapply"
+            $guardTaskPath = "\Microsoft\Windows\Win11Debloat\"
+            $guardAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"Invoke-AiComponentNeutralization -ConfigPath '$ConfigPath'`""
+            $guardTrigger = New-ScheduledTaskTrigger -AtLogOn
+            $guardSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 10)
+            $guardPrincipal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+            
+            try {
+                $existingTask = Get-ScheduledTask -TaskPath $guardTaskPath -TaskName $guardTaskName -ErrorAction SilentlyContinue
+                if ($existingTask) {
+                    Register-ScheduledTask -TaskPath $guardTaskPath -TaskName $guardTaskName -Action $guardAction -Trigger $guardTrigger -Settings $guardSettings -Principal $guardPrincipal -Force -ErrorAction Stop | Out-Null
+                } else {
+                    Register-ScheduledTask -TaskPath $guardTaskPath -TaskName $guardTaskName -Action $guardAction -Trigger $guardTrigger -Settings $guardSettings -Principal $guardPrincipal -ErrorAction Stop | Out-Null
+                }
+                Write-RenderStatus "Post-WU AI policy guard task registered successfully." "Success"
+            } catch {
+                Write-RenderStatus "Could not register post-WU guard task: $_" "Warning"
+            }
+        } catch {
+            Write-RenderStatus "Could not set up post-Windows Update guard: $_" "Warning"
+        }
+    }
+
     Write-RenderStatus "AI Component Neutralization Completed." "Success"
 }

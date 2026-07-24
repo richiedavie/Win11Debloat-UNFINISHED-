@@ -4,8 +4,10 @@
 :: ============================================================================
 setlocal EnableExtensions
 
-:: Set Working Directory to Script Location
 cd /d "%~dp0"
+
+:: Unblock downloaded PowerShell and batch files (removes Zone.Identifier)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Path '%~dp0' -Recurse -Filter '*.ps1', '*.psm1', '*.bat' | Unblock-File -ErrorAction SilentlyContinue"
 
 :: Check for Administrative Privileges
 net session >nul 2>&1
@@ -18,6 +20,6 @@ if %errorlevel% neq 0 (
 
 :: Launch Main PowerShell Script
 echo [Win11Debloat] Administrator privileges verified. Starting Windows 11 Debloater...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Start-Debloater.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Start-Debloater.ps1" %*
 
 pause
