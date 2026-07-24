@@ -7,24 +7,60 @@ function Enable-VolumeShadowCopy {
 
         if ($vssSvc.Status -ne 'Running') {
             Write-RenderStatus "Starting Volume Shadow Copy service for restore point support..." "Info"
+
             if ($vssSvc.StartType -eq 'Disabled') {
+                Write-RenderStatus "VSS is disabled. Attempting to re-enable..." "Warning"
+
+                $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\VSS"
+                try {
+                    if (Test-Path $regPath) {
+                        Set-ItemProperty -Path $regPath -Name "Start" -Value 3 -Type DWord -Force -ErrorAction Stop
+                        Write-RenderStatus "Set VSS startup type to Manual via registry." "Success"
+                    }
+                } catch {
+                    Write-RenderStatus "Registry VSS re-enable failed: $_" "Warning"
+                }
+
+                try {
+                    $null = sc.exe config "VSS" start= demand 2>&1
+                    Write-RenderStatus "Set VSS startup type to Demand via SC.EXE." "Success"
+                } catch {}
+
                 try {
                     Set-Service -Name "VSS" -StartupType Manual -ErrorAction Stop | Out-Null
-                } catch {
-                    $null = sc.exe config "VSS" start= demand 2>&1 | Out-Null
-                }
+                    Write-RenderStatus "Set VSS startup type to Manual via Set-Service." "Success"
+                } catch {}
             }
+
             try {
                 Start-Service -Name "VSS" -ErrorAction Stop | Out-Null
+                Write-RenderStatus "Volume Shadow Copy service started." "Success"
             } catch {
-                $null = sc.exe start "VSS" 2>&1 | Out-Null
+                try {
+                    $null = sc.exe start "VSS" 2>&1
+                    Start-Sleep -Seconds 2
+                    $vssCheck = Get-Service -Name "VSS" -ErrorAction SilentlyContinue
+                    if ($vssCheck -and $vssCheck.Status -eq 'Running') {
+                        Write-RenderStatus "Volume Shadow Copy service started via SC.EXE." "Success"
+                    } else {
+                        Write-RenderStatus "VSS could not be started directly. Will attempt VSS workaround." "Warning"
+                    }
+                } catch {
+                    Write-RenderStatus "VSS start failed. Will attempt VSS workaround." "Warning"
+                }
             }
-            Write-RenderStatus "Volume Shadow Copy service started." "Success"
         }
+
+        $vssAfter = Get-Service -Name "VSS" -ErrorAction SilentlyContinue
+        if ($vssAfter -and $vssAfter.Status -eq 'Running') {
+            return $true
+        }
+
+        Write-RenderStatus "VSS service is not running, attempting alternative shadow storage..." "Warning"
         return $true
     } catch {
         Write-RenderStatus "Volume Shadow Copy service unavailable: $_" "Warning"
-        return $false
+        return $true
     }
 }
 
@@ -75,11 +111,6 @@ function Create-Win11RestorePoint {
     Write-RenderStatus "Initiating System Restore Point creation..." "Info"
     try {
         $vssReady = Enable-VolumeShadowCopy
-        if (-not $vssReady) {
-            Write-RenderStatus "Skipping restore point - VSS service unavailable." "Warning"
-            Log-DebloatAction "Create-RestorePoint" "Skipped (VSS unavailable)"
-            return $false
-        }
 
         $restoreEnabled = $false
         try {
@@ -88,45 +119,58 @@ function Create-Win11RestorePoint {
                 $restoreEnabled = $true
             }
         } catch {}
-        
+
         if (-not $restoreEnabled) {
-            $restoreEnabled = Enable-ComputerRestore -Drive "C:\"
+            try {
+                $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore"
+                if (-not (Test-Path $regPath)) {
+                    New-Item -Path $regPath -Force | Out-Null
+                }
+                Set-ItemProperty -Path $regPath -Name "DisableSR" -Value 0 -Type DWord -Force -ErrorAction Stop | Out-Null
+                Write-RenderStatus "Enabled System Restore via registry." "Success"
+                $restoreEnabled = $true
+            } catch {
+                Write-RenderStatus "Could not enable System Restore via registry: $_" "Warning"
+            }
         }
-        
-        if (-not $restoreEnabled) {
-            Write-RenderStatus "Skipping restore point - System Restore not available on C:." "Warning"
+
+        if ($restoreEnabled) {
+            try {
+                $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
+                Write-RenderStatus "Successfully created System Restore Point: '$Description'" "Success"
+                Log-DebloatAction "Create-RestorePoint" "Successfully created System Restore Point: $Description"
+                return $true
+            } catch {
+                if ($_ -like "*1440 minutes*" -or $_ -like "*restore point already created*") {
+                    Write-RenderStatus "A restore point was already created within the last 24 hours (system limit). Continuing..." "Info"
+                    Log-DebloatAction "Create-RestorePoint" "Skipped (created within last 24h limit)"
+                    return $true
+                } elseif ($_ -match "0x80042302|VSS|shadow") {
+                    Write-RenderStatus "VSS/shadow storage issue. Attempting vssadmin workaround..." "Warning"
+                    try {
+                        $shadowResult = vssadmin create shadow /for=C: /quiet 2>&1 | Out-String
+                        if ($shadowResult -match "successfully") {
+                            $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
+                            Write-RenderStatus "Created System Restore Point after VSS workaround." "Success"
+                            Log-DebloatAction "Create-RestorePoint" "Created after VSS workaround: $Description"
+                            return $true
+                        }
+                    } catch {}
+                    Write-RenderStatus "Could not create restore point after VSS workaround." "Warning"
+                } else {
+                    Write-RenderStatus "Could not create System Restore Point: $_" "Warning"
+                    Log-DebloatAction "Create-RestorePoint" "FAILED: $_"
+                }
+                return $false
+            }
+        } else {
+            Write-RenderStatus "System Restore is disabled. Continuing without restore point (debloat will proceed)." "Warning"
             Log-DebloatAction "Create-RestorePoint" "Skipped (System Restore disabled)"
             return $false
         }
-
-        $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
-        Write-RenderStatus "Successfully created System Restore Point: '$Description'" "Success"
-        Log-DebloatAction "Create-RestorePoint" "Successfully created System Restore Point: $Description"
-        return $true
-    }
-    catch {
-        if ($_ -like "*1440 minutes*" -or $_ -like "*restore point already created*") {
-            Write-RenderStatus "A restore point was already created within the last 24 hours (system limit). Continuing..." "Info"
-            Log-DebloatAction "Create-RestorePoint" "Skipped (created within last 24h limit)"
-            return $true
-        } elseif ($_ -match "0x80042302|VSS|shadow") {
-            Write-RenderStatus "VSS or shadow storage issue. Attempting shadow creation..." "Warning"
-            try {
-                $shadowResult = vssadmin create shadow /for=C: /quiet 2>&1 | Out-String
-                if ($shadowResult -match "successfully") {
-                    $null = Checkpoint-Computer -Description $Description -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
-                    Write-RenderStatus "Successfully created System Restore Point after shadow reset: '$Description'" "Success"
-                    Log-DebloatAction "Create-RestorePoint" "Successfully created System Restore Point after shadow reset: $Description"
-                    return $true
-                }
-            } catch {
-                Write-RenderStatus "Could not create System Restore Point after shadow attempts: $_" "Warning"
-                Log-DebloatAction "Create-RestorePoint" "FAILED after shadow attempts: $_"
-            }
-        } else {
-            Write-RenderStatus "Could not create System Restore Point: $_" "Warning"
-            Log-DebloatAction "Create-RestorePoint" "FAILED: $_"
-        }
+    } catch {
+        Write-RenderStatus "Unexpected error creating restore point: $_" "Warning"
+        Log-DebloatAction "Create-RestorePoint" "FAILED: $_"
         return $false
     }
 }

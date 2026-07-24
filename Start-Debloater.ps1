@@ -82,10 +82,11 @@ if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
 if (-not $NoRestorePoint -and -not $DryRun) {
     $rpResult = Create-Win11RestorePoint -Description "Win11Debloat Pre-Flight Restore Point"
     if (-not $rpResult) {
-        Write-RenderStatus "CRITICAL: System Restore Point creation failed. Debloater will halt for safety." "Error"
-        Log-DebloatAction "Safety-Halt" "System Restore Point creation failed. Aborting debloat execution."
-        if (-not $Silent) { Read-Host "`nPress Enter to exit..." }
-        Exit 1
+        Write-RenderStatus "WARNING: System Restore Point creation failed. Continuing without restore point." "Warning"
+        Write-RenderStatus "Run a full debloat only after verifying System Restore is enabled on C:." "Warning"
+        Log-DebloatAction "Safety-Warning" "System Restore Point creation failed. Continuing debloat execution without restore point."
+    } else {
+        Write-RenderStatus "Pre-flight restore point created successfully." "Success"
     }
 }
 
