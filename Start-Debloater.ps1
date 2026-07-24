@@ -1,3 +1,9 @@
+param(
+    [switch]$Silent = $false,
+    [string]$Preset = "",
+    [switch]$NoRestorePoint = $false
+)
+
 # 1. Environment & OS Detection (Auto-enable DryRun on Linux/macOS)
 if ($IsLinux -or $IsMacOS) {
     Write-Host "`n[!] Non-Windows environment detected ($($PSVersionTable.OS))." -ForegroundColor Yellow
@@ -57,21 +63,14 @@ foreach ($ModulePath in $ModuleFiles) {
     }
 }
 
-# 6. Parse command line parameters for silent/automation mode
-param(
-    [switch]$Silent = $false,
-    [string]$Preset = "",
-    [switch]$NoRestorePoint = $false
-)
-
-# 7. Ensure Administrator privileges
+# 6. Ensure Administrator privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Error: Administrator privileges are required to run Windows 11 Debloater." -ForegroundColor Red
     Write-Host "[!] Please run 'Run.bat' as Administrator." -ForegroundColor Red
     Exit
 }
 
-# 8. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
+# 7. Strict Target Build Enforcement (24H2/25H2 minimum 26100)
 $TargetBuild = 26100
 if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Write-Host "[!] Unsupported OS build detected. Exiting." -ForegroundColor Red
@@ -79,7 +78,7 @@ if (-not (Test-Win11DebloatTargetBuild -MinBuild $TargetBuild)) {
     Exit 1
 }
 
-# 9. Create default restore point at startup (unless suppressed)
+# 8. Create default restore point at startup (unless suppressed)
 if (-not $NoRestorePoint -and -not $DryRun) {
     $rpResult = Create-Win11RestorePoint -Description "Win11Debloat Pre-Flight Restore Point"
     if (-not $rpResult) {
@@ -90,7 +89,7 @@ if (-not $NoRestorePoint -and -not $DryRun) {
     }
 }
 
-# 10. Preset resolution helper
+# 9. Preset resolution helper
 function Resolve-PresetConfigs {
     param([string]$PresetFile)
 

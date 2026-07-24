@@ -7,7 +7,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 :: Unblock downloaded PowerShell and batch files (removes Zone.Identifier)
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Path '%~dp0' -Recurse -Filter '*.ps1', '*.psm1', '*.bat' | Unblock-File -ErrorAction SilentlyContinue"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Path '%~dp0' -Recurse -Include '*.ps1','*.psm1','*.bat' | Unblock-File -ErrorAction SilentlyContinue"
 
 :: Check for Administrative Privileges
 net session >nul 2>&1
