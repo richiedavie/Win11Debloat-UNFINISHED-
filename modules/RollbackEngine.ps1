@@ -19,7 +19,8 @@ function New-SystemStateManifest {
     )
 
     if (-not $OutputPath) {
-        $OutputPath = Join-Path $global:RootDir "logs\state_manifest_latest.json"
+        $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+        $OutputPath = Join-Path $global:RootDir "logs\state_manifest_${Timestamp}.json"
     }
 
     $Manifest = @{
@@ -111,6 +112,13 @@ function New-SystemStateManifest {
     New-AtomicJsonFile -Path $OutputPath -Data $Manifest
     Write-RenderStatus "System state manifest saved to: $OutputPath" "Success"
     Log-DebloatAction "State-Manifest" "Saved state snapshot to $OutputPath"
+
+    $HistoryLog = Join-Path $global:RootDir "logs\debloat_history.log"
+    $HistoryEntry = "[$($Manifest.timestamp)] MANIFEST_CREATED | $OutputPath | RegistryKeys=$($RegistryPaths.Count) | Services=$($ServiceNames.Count) | AppxPackages=$($AppxPackages.Count)"
+    if (-not (Test-Path $HistoryLog)) {
+        New-Item -ItemType File -Path $HistoryLog -Force | Out-Null
+    }
+    Add-Content -Path $HistoryLog -Value $HistoryEntry -Encoding UTF8
 }
 
 function Invoke-Rollback {

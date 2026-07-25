@@ -20,6 +20,15 @@ function Invoke-AiComponentNeutralization {
 
     Write-RenderStatus "Starting AI Component Neutralization..." "Header"
 
+    $IsOnline = $true
+    try {
+        $IsOnline = Test-InternetConnectivity
+    } catch {}
+    if (-not $IsOnline) {
+        Write-RenderStatus "No active internet connection detected. Skipping online-dependent AppX provisioning operations." "Warning"
+        Write-RenderStatus "Proceeding with offline registry policies and service management only." "Info"
+    }
+
     if ($Config.registry_policies) {
         foreach ($Reg in $Config.registry_policies) {
             $Hive = $Reg.hive
@@ -106,7 +115,11 @@ function Invoke-AiComponentNeutralization {
     if ($Config.appx_packages) {
         $Targets = $Config.appx_packages
         $AllUserPackages = Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue
-        $AllProvisionedPackages = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        if ($IsOnline) {
+            $AllProvisionedPackages = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        } else {
+            $AllProvisionedPackages = @()
+        }
 
         foreach ($AppName in $Targets) {
             $FoundAny = $false
@@ -138,31 +151,35 @@ function Invoke-AiComponentNeutralization {
                 }
             }
 
-            $MatchingProvPkgs = $AllProvisionedPackages | Where-Object { 
-                $_.DisplayName -like "*$AppName*" -or $_.PackageName -like "*$AppName*"
-            }
+            if ($IsOnline) {
+                $MatchingProvPkgs = $AllProvisionedPackages | Where-Object { 
+                    $_.DisplayName -like "*$AppName*" -or $_.PackageName -like "*$AppName*"
+                }
 
-            if ($MatchingProvPkgs) {
-                foreach ($ProvPkg in $MatchingProvPkgs) {
-                    $FoundAny = $true
-                    if ($DryRun) {
-                        Write-RenderStatus "[DRYRUN] Would purge provisioned AI package: $($ProvPkg.PackageName)" "Muted"
-                        continue
-                    }
-                    try {
-                        Remove-AppxProvisionedPackage -Online -PackageName $ProvPkg.PackageName -ErrorAction Stop | Out-Null
-                        Write-RenderStatus "Purged provisioned AI package: $($ProvPkg.PackageName)" "Success"
-                        Log-DebloatAction "AI-Provisioned-Purge" "Purged $($ProvPkg.PackageName)"
-                    } catch {
+                if ($MatchingProvPkgs) {
+                    foreach ($ProvPkg in $MatchingProvPkgs) {
+                        $FoundAny = $true
+                        if ($DryRun) {
+                            Write-RenderStatus "[DRYRUN] Would purge provisioned AI package: $($ProvPkg.PackageName)" "Muted"
+                            continue
+                        }
                         try {
-                            $null = dism.exe /Online /Remove-ProvisionedAppxPackage /PackageName:"$($ProvPkg.PackageName)" 2>&1
-                            Write-RenderStatus "Purged AI package via DISM: $($ProvPkg.PackageName)" "Success"
-                            Log-DebloatAction "AI-Provisioned-Purge" "Purged via DISM $($ProvPkg.PackageName)"
+                            Remove-AppxProvisionedPackage -Online -PackageName $ProvPkg.PackageName -ErrorAction Stop | Out-Null
+                            Write-RenderStatus "Purged provisioned AI package: $($ProvPkg.PackageName)" "Success"
+                            Log-DebloatAction "AI-Provisioned-Purge" "Purged $($ProvPkg.PackageName)"
                         } catch {
-                            Write-RenderStatus "Failed AI provisioned purge $($ProvPkg.PackageName): $_" "Warning"
+                            try {
+                                $null = dism.exe /Online /Remove-ProvisionedAppxPackage /PackageName:"$($ProvPkg.PackageName)" 2>&1
+                                Write-RenderStatus "Purged AI package via DISM: $($ProvPkg.PackageName)" "Success"
+                                Log-DebloatAction "AI-Provisioned-Purge" "Purged via DISM $($ProvPkg.PackageName)"
+                            } catch {
+                                Write-RenderStatus "Failed AI provisioned purge $($ProvPkg.PackageName): $_" "Warning"
+                            }
                         }
                     }
                 }
+            } else {
+                Write-RenderStatus "Skipping provisioned package purge for $AppName (offline mode)" "Muted"
             }
 
             if (-not $FoundAny) {

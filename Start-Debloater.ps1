@@ -1,3 +1,5 @@
+#Requires -RunAsAdministrator
+
 param(
     [switch]$Silent = $false,
     [string]$Preset = "",
@@ -21,7 +23,9 @@ $ConfigDir = Join-Path $RootDir "config"
 $ModulesDir = Join-Path $RootDir "modules"
 $UiDir = Join-Path $RootDir "ui"
 $BackupDir = Join-Path $RootDir "logs\registry_backups"
-$ManifestPath = Join-Path $RootDir "logs\state_manifest_latest.json"
+$ManifestTimestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$ManifestPath = Join-Path $RootDir "logs\state_manifest_${ManifestTimestamp}.json"
+$ManifestLatestPath = Join-Path $RootDir "logs\state_manifest_latest.json"
 $PresetsDir = Join-Path $RootDir "presets"
 
 # 3. Enable long path support
@@ -192,6 +196,9 @@ try {
     $ServiceNames = @("DiagTrack","dmwappushservice","sysmain","WerSvc","WSAIFabricSvc","OneDrive","EdgeUpdate","WSearch","WpnService","MapsBroker","PhoneSvc")
     $AppxTargets = @("Copilot","549981C3F5F10","XboxApp","BingWeather","SpotifyMusic","Clipchamp","MicrosoftTeams","PowerAutomateDesktop","YourPhone","SkypeApp","Print3D","ZuneVideo","ZuneMusic")
     New-SystemStateManifest -OutputPath $ManifestPath -RegistryPaths $RegistryPaths -ServiceNames $ServiceNames -AppxPackages $AppxTargets
+    if (Test-Path $ManifestPath) {
+        Copy-Item -Path $ManifestPath -Destination $ManifestLatestPath -Force -ErrorAction SilentlyContinue
+    }
 } catch {
     Write-RenderStatus "Could not generate initial state manifest: $_" "Warning"
 }
@@ -386,7 +393,7 @@ do {
         "7" {
             Show-HeaderBanner
             Write-RenderStatus "Initiating Rollback from latest state manifest..." "Header"
-            Invoke-Rollback -ManifestPath $ManifestPath
+            Invoke-Rollback -ManifestPath $ManifestLatestPath
             Read-Host "`nPress Enter to return to menu..."
         }
         "8" {

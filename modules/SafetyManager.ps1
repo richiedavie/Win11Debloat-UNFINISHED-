@@ -233,3 +233,17 @@ function Set-TrustedInstallerRegistryAcl {
         }
     }
 }
+
+function Test-InternetConnectivity {
+    param(
+        [string]$TestHost = "www.microsoft.com"
+    )
+    try {
+        $tcpClient = New-Object System.Net.Sockets.TcpClient
+        $tcpClient.Connect($TestHost, 443)
+        $tcpClient.Close()
+        return $true
+    } catch {
+        return $false
+    }
+}

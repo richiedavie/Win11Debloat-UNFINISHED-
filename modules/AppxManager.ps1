@@ -234,17 +234,46 @@ function Remove-DebloatAppxPackages {
             $Removed = $true
         } catch {
             $ErrorMsg = $_.Exception.Message
-            try {
-                Remove-AppxPackage -Package $PkgFullName -ErrorAction Stop
-                $Removed = $true
-            } catch {
+            $ErrorCode = $_.Exception.HResult
+            if ($ErrorCode -eq 0x80073D02 -or $ErrorMsg -match "0x80073D02|app.in.use|being used|cannot be removed because it is currently in use") {
+                Write-RenderStatus "App in use detected for $PkgFullName. Attempting process termination and retry..." "Warning"
                 try {
-                    $pkgObj2 = Get-AppxPackage -Package $PkgFullName -ErrorAction SilentlyContinue
-                    if ($pkgObj2) {
-                        $pkgObj2 | Remove-AppxPackage -ErrorAction SilentlyContinue
-                        $Removed = $true
+                    if ($PkgObj) {
+                        Stop-LockedAppProcesses -PackageFamilyName $PkgObj.PackageFamilyName
                     }
-                } catch {}
+                    Start-Sleep -Seconds 2
+                    Remove-AppxPackage -Package $PkgFullName -AllUsers -ErrorAction Stop
+                    $Removed = $true
+                    Write-RenderStatus "Removed installed package after retry: $PkgFullName" "Success"
+                    Log-DebloatAction "AppX-User-Remove" "Removed $PkgFullName (after retry)"
+                } catch {
+                    $ErrorMsg = $_.Exception.Message
+                    try {
+                        Remove-AppxPackage -Package $PkgFullName -ErrorAction Stop
+                        $Removed = $true
+                    } catch {
+                        try {
+                            $pkgObj2 = Get-AppxPackage -Package $PkgFullName -ErrorAction SilentlyContinue
+                            if ($pkgObj2) {
+                                $pkgObj2 | Remove-AppxPackage -ErrorAction SilentlyContinue
+                                $Removed = $true
+                            }
+                        } catch {}
+                    }
+                }
+            } else {
+                try {
+                    Remove-AppxPackage -Package $PkgFullName -ErrorAction Stop
+                    $Removed = $true
+                } catch {
+                    try {
+                        $pkgObj2 = Get-AppxPackage -Package $PkgFullName -ErrorAction SilentlyContinue
+                        if ($pkgObj2) {
+                            $pkgObj2 | Remove-AppxPackage -ErrorAction SilentlyContinue
+                            $Removed = $true
+                        }
+                    } catch {}
+                }
             }
         }
         
