@@ -5,8 +5,10 @@
   "include_appx_purge": true,
   "include_registry_tweaks": true,
   "include_services_disable": true,
+  "include_edge_neutralization": true,
   "ai_components_config": "ai_components.json",
   "bloatware_config": "bloatware_apps.json",
   "registry_config": "registry_tweaks.json",
-  "services_config": "services_list.json"
+  "services_config": "services_list.json",
+  "edge_block_config": "edge_block.json"
 }

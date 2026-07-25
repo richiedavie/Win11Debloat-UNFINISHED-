@@ -63,14 +63,16 @@ foreach ($JsonCfg in $JsonConfigs) {
     }
 }
 
-# 6. Module files list
+# 6. Module files list - Rendering.ps1 MUST be loaded first
 $ModuleFiles = @(
+    (Join-Path $UiDir "Rendering.ps1"),
     (Join-Path $UiDir "Menu.ps1"),
     (Join-Path $ModulesDir "VersionGuard.ps1"),
     (Join-Path $ModulesDir "SafetyManager.ps1"),
     (Join-Path $ModulesDir "AppxManager.ps1"),
     (Join-Path $ModulesDir "RegistryManager.ps1"),
     (Join-Path $ModulesDir "ServiceManager.ps1"),
+    (Join-Path $ModulesDir "EdgeOptimizer.ps1"),
     (Join-Path $ModulesDir "AiManager.ps1"),
     (Join-Path $ModulesDir "RollbackEngine.ps1")
 )
@@ -142,12 +144,16 @@ function Resolve-PresetConfigs {
     if ($Preset.services_config) {
         $ConfigMap.services = Join-Path $ConfigDir $Preset.services_config
     }
+    if ($Preset.edge_block_config) {
+        $ConfigMap.edge = Join-Path $ConfigDir $Preset.edge_block_config
+    }
 
     $ConfigMap.flags = @{
         ai = [bool]($Preset.include_ai_neutralization -eq $true)
         appx = [bool]($Preset.include_appx_purge -eq $true)
         registry = [bool]($Preset.include_registry_tweaks -eq $true)
         services = [bool]($Preset.include_services_disable -eq $true)
+        edge = [bool]($Preset.include_edge_neutralization -eq $true)
     }
 
     return $ConfigMap
@@ -307,6 +313,11 @@ if ($Silent) {
         Apply-ServiceAndTaskTweaks -ConfigPath $SvcCfg
     }
 
+    if ($PresetConfigs.flags.edge -or $SelectedPreset -eq "deep") {
+        Write-RenderStatus "Running Microsoft Edge Neutralization..." "Info"
+        Invoke-EdgeNeutralizer
+    }
+
     Write-RenderStatus "Silent debloat sequence finished." "Success"
     exit 0
 }
@@ -342,8 +353,13 @@ do {
 
             if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.services) {
                 $SvcCfg = Join-Path $ConfigDir "services_list.json"
-                if (-not $PresetConfigs.services) { $SvcCfg = $PresetConfigs.services }
+                if ($PresetConfigs.services) { $SvcCfg = $PresetConfigs.services }
                 Apply-ServiceAndTaskTweaks -ConfigPath $SvcCfg
+            }
+
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.edge) {
+                Write-RenderStatus "Running Microsoft Edge Neutralization..." "Info"
+                Invoke-EdgeNeutralizer
             }
 
             Write-RenderStatus "Full Debloat Sequence Finished successfully!" "Success"
@@ -387,16 +403,23 @@ do {
         }
         "6" {
             Show-HeaderBanner
-            $null = Create-Win11RestorePoint -Description "Win11Debloat Manual System Restore Point"
+            Write-RenderStatus "Starting Microsoft Edge Neutralization..." "Header"
+            $null = Create-Win11RestorePoint -Description "Win11Debloat Edge Neutralization Backup"
+            Invoke-EdgeNeutralizer
             Read-Host "`nPress Enter to return to menu..."
         }
         "7" {
+            Show-HeaderBanner
+            $null = Create-Win11RestorePoint -Description "Win11Debloat Manual System Restore Point"
+            Read-Host "`nPress Enter to return to menu..."
+        }
+        "8" {
             Show-HeaderBanner
             Write-RenderStatus "Initiating Rollback from latest state manifest..." "Header"
             Invoke-Rollback -ManifestPath $ManifestLatestPath
             Read-Host "`nPress Enter to return to menu..."
         }
-        "8" {
+        "9" {
             Show-HeaderBanner
             Write-RenderStatus "Running standalone build compatibility check..." "Header"
             & (Join-Path $ModulesDir "..\utils\Invoke-BuildCheck.ps1")

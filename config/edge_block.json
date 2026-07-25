@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "edgePolicyRules": {
+    "preventReinstallation": true,
+    "disableStartupBoost": true,
+    "disableBackgroundMode": true
+  },
+  "ifeoBlock": {
+    "targetExecutable": "msedge.exe",
+    "debuggerRedirect": "cmd.exe /c exit"
+  },
+  "registryKeys": [
+    {
+      "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+      "name": "DoNotUpdateToEdgeWithChromium",
+      "type": "DWORD",
+      "value": 1
+    },
+    {
+      "path": "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge",
+      "name": "NoRemove",
+      "type": "DWORD",
+      "value": 0
+    }
+  ]
+}

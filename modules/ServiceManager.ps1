@@ -2,16 +2,13 @@
 
 $RegistryDisableMap = @{
     "SysMain" = @{
-        "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 3 }
+        "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 4 }
     }
     "dmwappushservice" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" = @{ "Start" = 4 }
     }
     "WSearch" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\WSearch" = @{ "Start" = 2 }
-    }
-    "SysMain" = @{
-        "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 4 }
     }
     "WerSvc" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\WerSvc" = @{ "Start" = 4 }
@@ -225,35 +222,36 @@ function Apply-ServiceAndTaskTweaks {
                 Write-RenderStatus "Service not present on system: $SvcName" "Muted"
                 continue
             }
-                try {
-                    if ($Action -match "Disable" -and (Test-ServiceHasCriticalDependency -ServiceName $SvcName)) {
-                        Write-RenderStatus "Skipping $SvcName - has critical OS dependencies" "Warning"
-                        Log-DebloatAction "Service-Disable" "SKIPPED (critical dependency): $SvcName"
-                        continue
+
+            try {
+                if ($Action -match "Disable" -and (Test-ServiceHasCriticalDependency -ServiceName $SvcName)) {
+                    Write-RenderStatus "Skipping $SvcName - has critical OS dependencies" "Warning"
+                    Log-DebloatAction "Service-Disable" "SKIPPED (critical dependency): $SvcName"
+                    continue
+                }
+                
+                Write-RenderStatus "Managing service: $SvcName ($DisplayName) -> $Action" "Info"
+                
+                if ($Action -match "Disable|Stop") {
+                    $Stopped = Stop-StubbornService -ServiceName $SvcName -MaxRetries 5
+                    if ($Stopped) {
+                        Write-RenderStatus "Stopped service: $SvcName" "Success"
+                    } else {
+                        Write-RenderStatus "Service may still be running: $SvcName (continuing...)" "Warning"
                     }
-                    
-                    Write-RenderStatus "Managing service: $SvcName ($DisplayName) -> $Action" "Info"
-                    
-                    if ($Action -match "Disable|Stop") {
-                        $Stopped = Stop-StubbornService -ServiceName $SvcName -MaxRetries 5
-                        if ($Stopped) {
-                            Write-RenderStatus "Stopped service: $SvcName" "Success"
+                }
+                
+                if ($Action -match "Disable") {
+                    try {
+                        if ($Action -match "Delay") {
+                            Set-Service -Name $SvcName -StartupType Automatic -ErrorAction Stop
+                            Write-RenderStatus "Set service to Automatic (Delayed): $SvcName" "Success"
+                            Log-DebloatAction "Service-Disable" "Set delayed start $SvcName"
                         } else {
-                            Write-RenderStatus "Service may still be running: $SvcName (continuing...)" "Warning"
+                            Set-Service -Name $SvcName -StartupType Disabled -ErrorAction Stop | Out-Null
+                            Write-RenderStatus "Disabled service: $SvcName" "Success"
+                            Log-DebloatAction "Service-Disable" "Disabled service $SvcName"
                         }
-                    }
-                    
-                    if ($Action -match "Disable") {
-                        try {
-                            if ($Action -match "Delay") {
-                                Set-Service -Name $SvcName -StartupType Automatic -ErrorAction Stop
-                                Write-RenderStatus "Set service to Automatic (Delayed): $SvcName" "Success"
-                                Log-DebloatAction "Service-Disable" "Set delayed start $SvcName"
-                            } else {
-                                Set-Service -Name $SvcName -StartupType Disabled -ErrorAction Stop | Out-Null
-                                Write-RenderStatus "Disabled service: $SvcName" "Success"
-                                Log-DebloatAction "Service-Disable" "Disabled service $SvcName"
-                            }
                     } catch {
                         $RegDisabled = Disable-ServiceViaRegistry -ServiceName $SvcName
                         if (-not $RegDisabled) {
@@ -267,33 +265,30 @@ function Apply-ServiceAndTaskTweaks {
                                 }
                                 Log-DebloatAction "Service-Disable" "Disabled service via SC.EXE $SvcName"
                             } catch {
-                                    Write-RenderStatus "Failed to disable service $($SvcName): $_" "Warning"
-                                    Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
-                                }
+                                Write-RenderStatus "Failed to disable service $($SvcName): $_" "Warning"
+                                Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
                             }
                         }
                     }
                 }
-                catch {
-                    try {
-                        if ($Action -match "Disable") {
-                            $RegDisabled = Disable-ServiceViaRegistry -ServiceName $SvcName
-                            if ($RegDisabled) {
-                                Write-RenderStatus "Disabled service via registry: $SvcName" "Success"
-                            } else {
-                                $null = sc.exe config "$SvcName" start= disabled 2>&1
-                                $null = sc.exe stop "$SvcName" 2>&1
-                                Write-RenderStatus "Disabled service via SC.EXE: $SvcName" "Success"
-                                Log-DebloatAction "Service-Disable" "Disabled service via SC.EXE $SvcName"
-                            }
+            }
+            catch {
+                try {
+                    if ($Action -match "Disable") {
+                        $RegDisabled = Disable-ServiceViaRegistry -ServiceName $SvcName
+                        if ($RegDisabled) {
+                            Write-RenderStatus "Disabled service via registry: $SvcName" "Success"
+                        } else {
+                            $null = sc.exe config "$SvcName" start= disabled 2>&1
+                            $null = sc.exe stop "$SvcName" 2>&1
+                            Write-RenderStatus "Disabled service via SC.EXE: $SvcName" "Success"
+                            Log-DebloatAction "Service-Disable" "Disabled service via SC.EXE $SvcName"
                         }
-                    } catch {
-                        Write-RenderStatus "Failed to manage service $($SvcName): $_" "Warning"
-                        Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
                     }
+                } catch {
+                    Write-RenderStatus "Failed to manage service $($SvcName): $_" "Warning"
+                    Log-DebloatAction "Service-Disable" "FAILED service $SvcName - $_"
                 }
-            } else {
-                Write-RenderStatus "Service not present on system: $SvcName" "Muted"
             }
         }
     }

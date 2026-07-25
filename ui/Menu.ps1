@@ -19,12 +19,13 @@ function Show-DebloatMenu {
     Write-Host "  [3] Inject Registry Policies (Copilot, Recall, Bing, Widgets, Telemetry)" -ForegroundColor Yellow
     Write-Host "  [4] Disable Telemetry Services & Scheduled Tasks" -ForegroundColor Yellow
     Write-Host "  [5] Neutralize AI Components (Recall, Copilot, ClickToDo, WSAI, Edge AI)" -ForegroundColor Magenta
-    Write-Host "  [6] Create Manual System Restore Point" -ForegroundColor Cyan
-    Write-Host "  [7] Rollback Last Debloat (Undo Engine)" -ForegroundColor Red
-    Write-Host "  [8] Run Build Compatibility Check" -ForegroundColor Gray
+    Write-Host "  [6] Neutralize Microsoft Edge (Uninstall + IFEO Block + Anti-Reinstall)" -ForegroundColor Magenta
+    Write-Host "  [7] Create Manual System Restore Point" -ForegroundColor Cyan
+    Write-Host "  [8] Rollback Last Debloat (Undo Engine)" -ForegroundColor Red
+    Write-Host "  [9] Run Build Compatibility Check" -ForegroundColor Gray
     Write-Host "  [Q] Exit" -ForegroundColor Red
     Write-Host ""
 
-    $Choice = Read-Host -Prompt "Enter selection [1-8, Q]"
+    $Choice = Read-Host -Prompt "Enter selection [1-9, Q]"
     return $Choice.Trim().ToUpper()
 }
