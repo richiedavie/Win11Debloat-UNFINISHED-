@@ -57,21 +57,21 @@ function Write-CLIHeader {
     $boxWidth = [Math]::Min([Math]::Max($screenWidth - 4, 40), 80)
     $innerWidth = $boxWidth - 2
 
-    $topBorder    = "╔" + ("═" * $innerWidth) + "╗"
-    $bottomBorder = "╚" + ("═" * $innerWidth) + "╝"
+    $topBorder    = "+" + ("=" * $innerWidth) + "+"
+    $bottomBorder = "+" + ("=" * $innerWidth) + "+"
 
     Write-Host $topBorder -ForegroundColor $BorderColor
 
     $centeredTitle = Center-CLIText -Text $Title -Width $innerWidth
-    Write-Host "║" -ForegroundColor $BorderColor -NoNewline
+    Write-Host "|" -ForegroundColor $BorderColor -NoNewline
     Write-Host $centeredTitle -ForegroundColor $TitleColor -NoNewline
-    Write-Host "║" -ForegroundColor $BorderColor
+    Write-Host "|" -ForegroundColor $BorderColor
 
     if (-not [string]::IsNullOrWhiteSpace($Subtitle)) {
         $centeredSub = Center-CLIText -Text $Subtitle -Width $innerWidth
-        Write-Host "║" -ForegroundColor $BorderColor -NoNewline
+        Write-Host "|" -ForegroundColor $BorderColor -NoNewline
         Write-Host $centeredSub -ForegroundColor Gray -NoNewline
-        Write-Host "║" -ForegroundColor $BorderColor
+        Write-Host "|" -ForegroundColor $BorderColor
     }
 
     Write-Host $bottomBorder -ForegroundColor $BorderColor
@@ -110,7 +110,7 @@ function Write-CLIMessage {
 
 function Write-CLIDivider {
     param (
-        [string]$Char = "─",
+        [string]$Char = "-",
         [ConsoleColor]$Color = [ConsoleColor]::DarkGray
     )
     $width = Get-SafeConsoleWidth
