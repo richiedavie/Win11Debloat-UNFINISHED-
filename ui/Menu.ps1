@@ -23,9 +23,10 @@ function Show-DebloatMenu {
     Write-Host "  [7] Create Manual System Restore Point" -ForegroundColor Cyan
     Write-Host "  [8] Rollback Last Debloat (Undo Engine)" -ForegroundColor Red
     Write-Host "  [9] Run Build Compatibility Check" -ForegroundColor Gray
+    Write-Host "  [10] Apply Low-Spec Optimizations (RAM/CPU/GPU)" -ForegroundColor Gray
     Write-Host "  [Q] Exit" -ForegroundColor Red
     Write-Host ""
 
-    $Choice = Read-Host -Prompt "Enter selection [1-9, Q]"
+    $Choice = Read-Host -Prompt "Enter selection [1-10, Q]"
     return $Choice.Trim().ToUpper()
 }

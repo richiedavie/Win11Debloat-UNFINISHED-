@@ -72,6 +72,7 @@ $ModuleFiles = @(
     (Join-Path $ModulesDir "AppxManager.ps1"),
     (Join-Path $ModulesDir "RegistryManager.ps1"),
     (Join-Path $ModulesDir "ServiceManager.ps1"),
+    (Join-Path $ModulesDir "LowSpecPreset.ps1"),
     (Join-Path $ModulesDir "EdgeOptimizer.ps1"),
     (Join-Path $ModulesDir "AiManager.ps1"),
     (Join-Path $ModulesDir "RollbackEngine.ps1")
@@ -147,6 +148,9 @@ function Resolve-PresetConfigs {
     if ($Preset.edge_block_config) {
         $ConfigMap.edge = Join-Path $ConfigDir $Preset.edge_block_config
     }
+    if ($Preset.low_spec_config) {
+        $ConfigMap.low_spec = Join-Path $ConfigDir $Preset.low_spec_config
+    }
 
     $ConfigMap.flags = @{
         ai = [bool]($Preset.include_ai_neutralization -eq $true)
@@ -154,6 +158,7 @@ function Resolve-PresetConfigs {
         registry = [bool]($Preset.include_registry_tweaks -eq $true)
         services = [bool]($Preset.include_services_disable -eq $true)
         edge = [bool]($Preset.include_edge_neutralization -eq $true)
+        low_spec = [bool]($Preset.include_low_spec_optimizations -eq $true)
     }
 
     return $ConfigMap
@@ -318,6 +323,18 @@ if ($Silent) {
         Invoke-EdgeNeutralizer
     }
 
+    if ($PresetConfigs.flags.low_spec -or $SelectedPreset -eq "deep") {
+        Write-RenderStatus "Running Low-Spec Optimizations..." "Info"
+        Apply-LowSpecOptimizations
+    }
+
+    if ($PresetConfigs.flags.registry -or $SelectedPreset -eq "deep") {
+        $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
+        if ($PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
+        Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
+        Invoke-RegistryTweaks -ConfigFolder $ConfigDir
+    }
+
     Write-RenderStatus "Silent debloat sequence finished." "Success"
     exit 0
 }
@@ -347,8 +364,9 @@ do {
 
             if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.registry) {
                 $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
-                if (-not $PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
+                if ($PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
                 Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
+                Invoke-RegistryTweaks -ConfigFolder $ConfigDir
             }
 
             if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.services) {
@@ -360,6 +378,11 @@ do {
             if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.edge) {
                 Write-RenderStatus "Running Microsoft Edge Neutralization..." "Info"
                 Invoke-EdgeNeutralizer
+            }
+
+            if ($SelectedPreset -eq "deep" -or $PresetConfigs.flags.low_spec) {
+                Write-RenderStatus "Running Low-Spec Optimizations..." "Info"
+                Apply-LowSpecOptimizations
             }
 
             Write-RenderStatus "Full Debloat Sequence Finished successfully!" "Success"
@@ -379,6 +402,7 @@ do {
             $RegCfg = Join-Path $ConfigDir "registry_tweaks.json"
             if ($PresetConfigs.registry) { $RegCfg = $PresetConfigs.registry }
             Apply-RegistryTweaks -ConfigPath $RegCfg -BackupDir $BackupDir
+            Invoke-RegistryTweaks -ConfigFolder $ConfigDir
             Read-Host "`nPress Enter to return to menu..."
         }
         "4" {
@@ -423,6 +447,13 @@ do {
             Show-HeaderBanner
             Write-RenderStatus "Running standalone build compatibility check..." "Header"
             & (Join-Path $ModulesDir "..\utils\Invoke-BuildCheck.ps1")
+            Read-Host "`nPress Enter to return to menu..."
+        }
+        "10" {
+            Show-HeaderBanner
+            Write-RenderStatus "Starting Low-Spec Optimizations..." "Header"
+            $null = Create-Win11RestorePoint -Description "Win11Debloat Low-Spec Optimization Backup"
+            Apply-LowSpecOptimizations
             Read-Host "`nPress Enter to return to menu..."
         }
         "Q" {

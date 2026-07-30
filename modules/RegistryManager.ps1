@@ -142,3 +142,46 @@ function Apply-RegistryTweaks {
 
     Write-RenderStatus "Registry Policy Injections Completed." "Success"
 }
+
+function Invoke-RegistryTweaks {
+    [CmdletBinding()]
+    param (
+        [string]$ConfigFolder = ""
+    )
+
+    if (-not $ConfigFolder) {
+        $ConfigFolder = Join-Path $global:RootDir "config"
+    }
+
+    if (-not (Test-Path $ConfigFolder)) {
+        Write-RenderStatus "Registry tweaks folder not found at: $ConfigFolder" "Error"
+        return
+    }
+
+    $RegFiles = Get-ChildItem -Path $ConfigFolder -Filter "*.reg" -ErrorAction SilentlyContinue
+    if (-not $RegFiles -or $RegFiles.Count -eq 0) {
+        Write-RenderStatus "No .reg files found in $ConfigFolder" "Muted"
+        return
+    }
+
+    Write-RenderStatus "Importing $($RegFiles.Count) registry tweak file(s) from $ConfigFolder..." "Header"
+
+    foreach ($File in $RegFiles) {
+        Write-RenderStatus "Importing: $($File.Name)" "Info"
+        try {
+            $Process = Start-Process -FilePath "reg.exe" -ArgumentList "import `"$($File.FullName)`"" -NoNewWindow -Wait -PassThru -ErrorAction Stop
+            if ($Process.ExitCode -eq 0) {
+                Write-RenderStatus "Successfully applied $($File.Name)" "Success"
+                Log-DebloatAction "Registry-Tweak" "Imported $($File.Name)"
+            } else {
+                Write-RenderStatus "Failed to apply $($File.Name) (Exit Code: $($Process.ExitCode))" "Warning"
+                Log-DebloatAction "Registry-Tweak" "FAILED $($File.Name) (Exit Code: $($Process.ExitCode))"
+            }
+        } catch {
+            Write-RenderStatus "Error importing $($File.Name): $_" "Warning"
+            Log-DebloatAction "Registry-Tweak" "FAILED $($File.Name) - $_"
+        }
+    }
+
+    Write-RenderStatus "Registry .reg batch import completed." "Success"
+}

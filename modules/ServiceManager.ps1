@@ -1,14 +1,26 @@
 # ServiceManager.ps1 - Disables Background Telemetry Services and Scheduled Tasks (24H2/25H2 Hardened)
 
 $RegistryDisableMap = @{
+    "DiagTrack" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\DiagTrack" = @{ "Start" = 4 }
+    }
     "SysMain" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\SysMain" = @{ "Start" = 4 }
     }
+    "WSearch" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\WSearch" = @{ "Start" = 4 }
+    }
+    "dosvc" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\dosvc" = @{ "Start" = 4 }
+    }
+    "TabletInputService" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\TabletInputService" = @{ "Start" = 4 }
+    }
+    "Spooler" = @{
+        "HKLM\SYSTEM\CurrentControlSet\Services\Spooler" = @{ "Start" = 4 }
+    }
     "dmwappushservice" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\dmwappushservice" = @{ "Start" = 4 }
-    }
-    "WSearch" = @{
-        "HKLM\SYSTEM\CurrentControlSet\Services\WSearch" = @{ "Start" = 2 }
     }
     "WerSvc" = @{
         "HKLM\SYSTEM\CurrentControlSet\Services\WerSvc" = @{ "Start" = 4 }

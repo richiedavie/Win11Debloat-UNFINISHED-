@@ -27,8 +27,23 @@
     },
     {
       "name": "WSearch",
-      "displayName": "Windows Search Indexer (Delayed Start)",
-      "action": "DelayStart"
+      "displayName": "Windows Search Indexer",
+      "action": "Disable"
+    },
+    {
+      "name": "dosvc",
+      "displayName": "Delivery Optimization",
+      "action": "Disable"
+    },
+    {
+      "name": "TabletInputService",
+      "displayName": "Touch Keyboard and Handwriting Panel",
+      "action": "Disable"
+    },
+    {
+      "name": "Spooler",
+      "displayName": "Print Spooler",
+      "action": "Disable"
     },
     {
       "name": "BthAvctpSvc",

@@ -1,0 +1,15 @@
+{
+  "name": "Low-Spec Hardware Optimization",
+  "description": "Aggressive optimizations for low-RAM, slow-disk, or weak iGPU systems. Disables background thrashing services and visual effects.",
+  "include_ai_neutralization": true,
+  "include_appx_purge": true,
+  "include_registry_tweaks": true,
+  "include_services_disable": true,
+  "include_edge_neutralization": true,
+  "include_low_spec_optimizations": true,
+  "ai_components_config": "ai_components.json",
+  "bloatware_config": "bloatware_apps.json",
+  "registry_config": "registry_tweaks.json",
+  "services_config": "services_list.json",
+  "edge_block_config": "edge_block.json"
+}

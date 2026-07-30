@@ -1,4 +1,4 @@
-# AiManager.ps1 - Recall, Copilot, ClickToDo & WSAI Neutralization Engine
+ # AiManager.ps1 - Recall, Copilot, ClickToDo & WSAI Neutralization Engine
 
 function Invoke-AiComponentNeutralization {
     param (
